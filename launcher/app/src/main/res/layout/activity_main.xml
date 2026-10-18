@@ -12,6 +12,18 @@
         android:layout_height="match_parent"
         android:alpha="0" />
 
+    <com.gathin.tvhome.WelcomeView
+        android:id="@+id/welcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="56dp"
+        android:layout_marginEnd="56dp"
+        android:contentDescription="@string/welcome_home"
+        android:focusable="false"
+        android:clickable="false"
+        android:visibility="invisible"
+        android:alpha="0" />
+
     <!-- Top shelf: the focused dock app's name, positioned above the dock in code. -->
     <TextView
         android:id="@+id/heroName"

@@ -44,6 +44,10 @@ step with screenshots from the TV. If you'd rather do it by hand, the pieces are
 A small native Android TV home screen (`com.gathin.tvhome`), built for sets with 1 GB of RAM:
 
 - A dark background with soft light sampled from the focused app or Play Next artwork.
+- **Welcome home** sits above the dock shelf in light Outfit lettering, with a pastel
+  blue–lilac–rose–peach gradient and a slow fade-and-rise entrance, staggered word by word.
+  It rests after the entrance
+  and fades away when scrolling into Play Next or the app grid.
 - A dock at the bottom in a lighter rounded band with the four apps you choose. The shelf above
   shows the focused dock app's name in large type with an ambient glow sampled from its banner.
   Press Down to scroll to large **Play Next** cards, followed by the rest of your apps in a grid.

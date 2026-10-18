@@ -62,6 +62,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private TrackedGlassView playNextGlass;
     private AmbientView ambient;
     private TextView heroName;
+    private WelcomeView welcome;
+    private float welcomeTop;
     private boolean heroShown;
     private TextView greeting;
     private TextView btnWifi;
@@ -136,6 +138,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         playNextGlass = findViewById(R.id.playNextGlass);
         ambient = findViewById(R.id.ambient);
         heroName = findViewById(R.id.heroName);
+        welcome = findViewById(R.id.welcome);
         greeting = findViewById(R.id.greeting);
         btnWifi = findViewById(R.id.btnWifi);
 
@@ -203,7 +206,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 highlight.scrolled(dy);
             }
             @Override public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int state) {
-                if (state == RecyclerView.SCROLL_STATE_IDLE) finishOriginalHandoff();
+                if (state == RecyclerView.SCROLL_STATE_IDLE) {
+                    finishOriginalHandoff();
+                    if (homeResumed && focusedSection == 0 && heroShown) welcome.revealAt(welcomeTop);
+                }
             }
         });
 
@@ -257,6 +263,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         focusedSection = -1;
         heroShown = false;
         heroName.setAlpha(0f);
+        welcome.reset();
         ambient.setAlpha(0f);
         adapter.reload();
         grid.scheduleLayoutAnimation();
@@ -301,6 +308,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         grid.removeCallbacks(revealWatchNext);
         pendingOriginalCard = null;
         highlight.pause();
+        welcome.reset();
         playNextHighlight.pause();
         if (pendingScrollFocus != null) { grid.removeOnScrollListener(pendingScrollFocus); pendingScrollFocus = null; }
         focusRequest++;
@@ -405,6 +413,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private void showHero(int position, float dockTopInRoot) {
         String label = adapter.labelAt(position);
         float y = dockTopInRoot - 14 * density - 26 * density - heroName.getHeight();
+        Rect viewport = new Rect(0, 0, grid.getWidth(), grid.getHeight());
+        root.offsetDescendantRectToMyCoords(grid, viewport);
+        float spaceTop = viewport.top + 12f * density;
+        float spaceBottom = y - 18f * density;
+        if (spaceBottom - spaceTop >= welcome.getHeight()) {
+            welcomeTop = spaceTop + (spaceBottom - spaceTop - welcome.getHeight()) / 2f;
+            if (grid.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) welcome.revealAt(welcomeTop);
+        } else welcome.hide();
         boolean changed = !label.contentEquals(heroName.getText());
 
         if (!heroShown) {
@@ -430,6 +446,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void hideHero() {
+        welcome.hide();
         if (!heroShown) return;
         heroShown = false;
         heroName.animate().alpha(0f).setDuration(160).start();
@@ -445,6 +462,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         super.dump(prefix, fd, writer, args);
         highlight.dump(writer);
         playNextHighlight.dump(writer);
+        welcome.dump(writer);
     }
 
     // ---- navigation ------------------------------------------------------------------------------

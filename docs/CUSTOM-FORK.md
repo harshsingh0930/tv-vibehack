@@ -6,6 +6,17 @@ contribution guide intentionally excludes blur, network access and content feeds
 are maintained on `custom/tv-home`; the upstream contribution is limited to app organisation.
 The original contribution guide and licences remain unchanged.
 
+Version 3.5 adds a **Welcome home** greeting in the dock's empty shelf space. Light, licensed
+Outfit lettering uses a pastel gradient and a finite fade/rise: Welcome appears first, with
+home following 220 ms later. Each word takes 900 ms to settle. It hides in Play Next
+and the app grid. The small text layer is rasterised for older TV GPUs; there is no looping
+animation, network request or background worker. The greeting is a nonfocusable decoration and
+does not alter D-pad targets. Its text is `welcome_home` in `res/values/strings.xml`.
+The entrance waits for the dock's vertical return to finish. Real-TV checks confirmed visible
+gradient lettering, completion of the word animation, cancellation while hidden in Play Next,
+return to the dock, and preservation of saved Home choices. A reduced-motion/disabled-animation
+system setting leaves the words fully visible immediately.
+
 ## Build
 
 Use JDK 17, SDK platform 34 and build-tools 34.0.0. Gradle downloads the project's pinned
