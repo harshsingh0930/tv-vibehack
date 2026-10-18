@@ -1,5 +1,9 @@
 # tv-vibehack
 
+This branch is a **custom launcher variant** with Play Next, one-shot menu blur and optional
+cached-process cleanup. Those features extend beyond the original project's contribution scope.
+See [custom build and validation notes](docs/CUSTOM-FORK.md) and [diagnostic tool setup](tools/README.md).
+
 **Your TV, minus the ads.** Debloat any Android TV / Google TV over ADB and give it a clean,
 tvOS-inspired launcher. Hand the prompt to Claude Code or any coding assistant, answer a few
 questions about which apps you use, and it does the rest on the real TV.
@@ -39,17 +43,48 @@ step with screenshots from the TV. If you'd rather do it by hand, the pieces are
 
 A small native Android TV home screen (`com.gathin.tvhome`), built for sets with 1 GB of RAM:
 
-- Pitch-black background, like Apple TV 4K.
+- A dark background with soft light sampled from the focused app or Play Next artwork.
 - A dock at the bottom in a lighter rounded band with the four apps you choose. The shelf above
   shows the focused dock app's name in large type with an ambient glow sampled from its banner.
-  Press Down and the dock slides up to reveal the rest of your apps in a grid.
-- One translucent glass highlight springs from tile to tile. The focused tile lifts and shows its
-  name.
+  Press Down to scroll to large **Play Next** cards, followed by the rest of your apps in a grid.
+- Hold **OK** on an app and choose **Move** in the compact frosted menu. Use the arrows, then **OK** to save or **Back**
+  to cancel. The four chosen dock apps can be reordered within the dock; other apps can be
+  reordered within the grid. The order survives returning Home and launcher restarts.
+- The menu's **In dock** toggle lets you replace a dock app with a grid app, or select which
+  dock slot a grid app should replace. The displaced app remains in the grid; nothing is uninstalled.
+  Menu blur is a small, downsampled snapshot captured only when opening a menu.
+- **App library** at the bottom of Home lists installed apps with TV or standard Android
+  launcher entries, including apps hidden from Home. Choose an app to add it back. An empty
+  dock slot also opens this library to choose any installed app for that slot.
+  Its Outfit type, icon and frosted pill match the Wi-Fi and Settings controls.
+- **Remove from Home** in the long-press menu hides the shortcut without uninstalling the app
+  or clearing its data. Removing a dock app leaves an **Add app** slot. Hidden apps remain in
+  App library and can be restored there.
+- **Play Next** reads the Android TV provider's app-published resume links and progress. It
+  needs **Read TV listings** permission; apps control which shows/channels they share. It
+  does not scrape streaming accounts or generate history. Artwork loads on demand over HTTPS
+  with a 2 MiB memory cache; an app icon appears when artwork is unavailable.
+- The original translucent glass highlight glides between app tiles and Play Next artwork. Rounded
+  programme images and captions sit in a separate rounded glass panel, matching the dock.
 - Frosted pills top right: **Inputs** (a dropdown of HDMI ports, AV and Live TV), **Wi-Fi**
   (shows the network name) and **Settings**. Greeting, a large thin clock and the date top left,
   set in [Outfit](https://fonts.google.com/specimen/Outfit).
-- Deterministic D-pad navigation, last focused tile remembered, staggered entrance animation.
-  No blur, no video, no network, no background services.
+- D-pad navigation uses the original floating-glass spring motion for the dock and app grid, with
+  the original glass styling, tile bounce, entrance animation and shelf fades. Entering Play Next
+  hands the visible glass bounds to a separate direct tracker, preventing its horizontal scroll
+  from fighting the spring. The same bounded bridge handles the return to app tiles; once the
+  vertical scroll settles, normal app navigation resumes with the original spring.
+  No video previews, continuous blur or persistent background services.
+- On Android 11, cached-process cleanup is enabled three seconds after Home gains focus,
+  with one additional pass ten seconds later to let apps finish stopping.
+  Android decides which background processes can close; this is not force-stop and active
+  services can remain or restart. Music, VPN/tunnel, download, casting, input and system-UID
+  apps are excluded. Google Play services, the Store and Xiaomi web content are protected.
+  Cached PatchWall is eligible if enabled. On the tested Redmi MiTV-AXFR0, PatchWall is disabled
+  after verifying a fresh Xiaomi TV+ launch still plays Aajtak; its app data is retained.
+  A successful API request does not guarantee that a vendor's firmware closes a process.
+  Hold **OK** on **Settings** for the cleanup switch. Android 14+ restricts
+  this API to the launcher's own processes, so cleanup requests are skipped there.
 
 Configure it in [`launcher/app/src/main/res/values/config.xml`](launcher/app/src/main/res/values/config.xml):
 dock order, hidden apps, Live TV package and columns. Build and install with
@@ -57,6 +92,11 @@ dock order, hidden apps, Live TV package and columns. Build and install with
 ```bash
 TV_HOST=192.168.1.50 launcher/build-and-install.sh
 ```
+
+For Play Next, grant the permission if it was not requested interactively:
+`adb -s YOUR_TV_SERIAL shell pm grant com.gathin.tvhome android.permission.READ_TV_LISTINGS`.
+On Windows, `launcher\build.ps1` uses `JAVA_HOME` and `ANDROID_HOME` (or explicit
+`-JavaHome` and `-SdkPath` arguments), and builds without installing or changing TV packages.
 
 Needs JDK 17 and the Android SDK (platform 34, build-tools 34.0.0). On macOS:
 `brew install openjdk@17 android-commandlinetools && sdkmanager "platforms;android-34" "build-tools;34.0.0"`.

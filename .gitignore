@@ -8,3 +8,24 @@ launcher/local.properties
 # your own TV's dumps (serial, android_id, device names) stay local
 backup/
 .DS_Store
+
+# Local developer environments, generated diagnostics and signing material.
+.toolchain/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.apk
+*.dex
+*.class
+*.jks
+*.keystore
+keystore.properties
+key.properties
+signing.properties
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+reports/

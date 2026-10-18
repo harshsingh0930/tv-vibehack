@@ -7,21 +7,34 @@
 
     <!-- Apps pinned to the dock row at the bottom, in this order. Missing apps are skipped. -->
     <string-array name="dock_apps">
-        <item>com.netflix.ninja</item>
-        <item>com.amazon.amazonvideo.livingroom</item>
         <item>com.google.android.youtube.tv</item>
         <item>in.startv.hotstar</item>
+        <item>com.mitv.tvhome.mitvplus</item>
+        <item>com.lagradost.cloudstream3</item>
     </string-array>
 
     <!-- Apps never shown as tiles (e.g. the Live TV app, which the Inputs menu already covers). -->
     <string-array name="hidden_apps">
-        <item>com.mediatek.wwtv.tvcenter</item>
+        <item>com.android.tv</item>
         <item>com.mitv.gallery</item>
     </string-array>
 
     <!-- The TV's Live TV / tuner app, offered at the end of the Inputs menu. Leave empty to omit. -->
-    <string name="live_tv_package" translatable="false">com.mediatek.wwtv.tvcenter</string>
+    <string name="live_tv_package" translatable="false">com.android.tv</string>
 
     <!-- Tiles per row in the grid; the dock always has this many slots. -->
     <integer name="columns">4</integer>
+
+    <!-- Process cleanup exclusions and explicitly eligible vendor home apps. No force-stop. -->
+    <string-array name="cleanup_protected_packages">
+        <item>com.android.vending</item>
+        <item>com.google.android.gms</item>
+        <item>com.google.android.gsf</item>
+        <item>com.xm.webcontent</item>
+        <item>com.xiaomi.mitv.tvmanager</item>
+        <item>com.xiaomi.mitv.handbook</item>
+    </string-array>
+    <string-array name="cleanup_extra_packages">
+        <item>com.mitv.tvhome.atv</item>
+    </string-array>
 </resources>
