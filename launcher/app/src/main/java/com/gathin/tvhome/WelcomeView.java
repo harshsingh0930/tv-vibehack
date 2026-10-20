@@ -143,6 +143,17 @@ public class WelcomeView extends View {
         }).start();
     }
 
+    void pause() {
+        wordEntrance.cancel();
+        animate().cancel();
+        // TV Settings is translucent: retain the shelf behind it, with no animation work.
+        wordProgress = 1f;
+        setAlpha(shown ? 1f : 0f);
+        setVisibility(shown ? View.VISIBLE : View.INVISIBLE);
+        if (shown) setTranslationY(restingTop);
+        invalidate();
+    }
+
     void reset() {
         shown = false;
         wordEntrance.cancel();

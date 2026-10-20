@@ -3,23 +3,29 @@
     android:layout_width="match_parent" android:layout_height="288dp"
     android:orientation="vertical" android:paddingTop="18dp"
     android:clipChildren="false" android:clipToPadding="false">
-    <TextView android:layout_width="match_parent" android:layout_height="38dp"
-        android:text="Play Next" android:textSize="20sp" android:textColor="#FFFFFFFF"
-        android:fontFamily="@font/outfit" android:fontVariationSettings="'wght' 500"
-        android:includeFontPadding="false" android:gravity="center_vertical" android:paddingStart="12dp" />
-    <FrameLayout android:layout_width="match_parent" android:layout_height="226dp"
-        android:background="@drawable/play_next_panel" android:clipChildren="false" android:clipToPadding="false">
+    <com.gathin.tvhome.FrostedPanel android:id="@+id/watchPanel"
+        android:layout_width="match_parent" android:layout_height="264dp"
+        android:clipChildren="false" android:clipToPadding="false">
+        <TextView android:id="@+id/watchTitle"
+            android:layout_width="wrap_content" android:layout_height="38dp"
+            android:layout_marginStart="12dp"
+            android:text="Play Next" android:textSize="20sp" android:textColor="#FFFFFFFF"
+            android:fontFamily="@font/outfit" android:fontVariationSettings="'wght' 500"
+            android:includeFontPadding="false" android:gravity="center_vertical"
+            android:focusable="false" android:clickable="false" />
         <HorizontalScrollView android:id="@+id/watchScroll"
             android:layout_width="match_parent" android:layout_height="match_parent"
+            android:layout_marginTop="38dp"
             android:scrollbars="none" android:clipToPadding="false" android:fillViewport="true">
             <LinearLayout android:id="@+id/watchCards" android:layout_width="wrap_content"
                 android:layout_height="match_parent" android:orientation="horizontal"
                 android:paddingStart="20dp" android:paddingEnd="20dp" android:paddingTop="20dp" />
         </HorizontalScrollView>
         <TextView android:id="@+id/watchEmpty" android:layout_width="match_parent"
+            android:layout_marginTop="38dp"
             android:layout_height="match_parent" android:gravity="center_vertical"
             android:paddingStart="12dp" android:textSize="14sp" android:textColor="#A6FFFFFF"
             android:text="Shows appear here when your apps share watch progress."
             android:fontFamily="@font/outfit" />
-    </FrameLayout>
+    </com.gathin.tvhome.FrostedPanel>
 </LinearLayout>

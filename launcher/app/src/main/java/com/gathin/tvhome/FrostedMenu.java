@@ -130,6 +130,16 @@ final class FrostedMenu {
     }
 
     private static void captureBackdrop(Activity activity, PopupWindow popup, View content, Rect area, float density) {
+        captureBackdrop(activity, popup, content, area, density, 18);
+    }
+
+    static void captureBackdrop(Activity activity, PopupWindow popup, View content, Rect area,
+                                float density, float cornerDp) {
+        captureBackdrop(activity, popup, content, area, density, cornerDp, 0);
+    }
+
+    static void captureBackdrop(Activity activity, PopupWindow popup, View content, Rect area,
+                                float density, float cornerDp, int dimAlpha) {
         Bitmap small = Bitmap.createBitmap(Math.max(1, area.width() / 3), Math.max(1, area.height() / 3), Bitmap.Config.ARGB_8888);
         Handler main = new Handler(Looper.getMainLooper());
         try {
@@ -154,7 +164,7 @@ final class FrostedMenu {
                     }
                     main.post(() -> {
                         if (popup.isShowing()) {
-                            content.setBackground(new Backdrop(small, density));
+                            content.setBackground(new Backdrop(small, density, cornerDp, dimAlpha));
                             android.util.Log.i("HomeMenu", "Frosted backdrop ready");
                         }
                     });
@@ -163,22 +173,36 @@ final class FrostedMenu {
         } catch (Exception ignored) { }
     }
 
-    private static final class Backdrop extends Drawable {
+    static final class Backdrop extends Drawable {
         private final Bitmap bitmap;
         private final float density;
+        private final float radius;
+        private final int dimAlpha;
+        // The bitmap must retain full opacity when translucent rim/tint paints change.
+        private final Paint bitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
-        Backdrop(Bitmap bitmap, float density) { this.bitmap = bitmap; this.density = density; }
+        Backdrop(Bitmap bitmap, float density) { this(bitmap, density, 18); }
+        Backdrop(Bitmap bitmap, float density, float cornerDp) {
+            this(bitmap, density, cornerDp, 0);
+        }
+        Backdrop(Bitmap bitmap, float density, float cornerDp, int dimAlpha) {
+            this.bitmap = bitmap; this.density = density; radius = cornerDp * density;
+            this.dimAlpha = dimAlpha;
+        }
         @Override public void draw(Canvas canvas) {
             RectF bounds = new RectF(getBounds());
-            Path path = new Path(); path.addRoundRect(bounds, 18 * density, 18 * density, Path.Direction.CW);
+            Path path = new Path(); path.addRoundRect(bounds, radius, radius, Path.Direction.CW);
             canvas.save(); canvas.clipPath(path);
             paint.setShader(null); paint.setStyle(Paint.Style.FILL);
-            if (bitmap != null) canvas.drawBitmap(bitmap, null, bounds, paint);
+            if (bitmap != null) canvas.drawBitmap(bitmap, null, bounds, bitmapPaint);
             paint.setColor(bitmap == null ? 0xF2282830 : 0xB51C1C24); canvas.drawRect(bounds, paint);
             paint.setShader(new LinearGradient(0, bounds.top, 0, bounds.bottom, 0x20FFFFFF, 0x04FFFFFF, Shader.TileMode.CLAMP));
             canvas.drawRect(bounds, paint); paint.setShader(null);
+            if (dimAlpha > 0) {
+                paint.setColor(dimAlpha << 24); canvas.drawRect(bounds, paint);
+            }
             paint.setColor(0x40FFFFFF); paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(density);
-            bounds.inset(density / 2, density / 2); canvas.drawRoundRect(bounds, 18 * density, 18 * density, paint);
+            bounds.inset(density / 2, density / 2); canvas.drawRoundRect(bounds, radius, radius, paint);
             canvas.restore();
         }
         @Override public void setAlpha(int alpha) { }

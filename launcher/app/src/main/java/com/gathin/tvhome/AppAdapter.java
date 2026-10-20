@@ -47,8 +47,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     interface TileListener {
         void onTileFocused(int position, View card);
 
-        /** Called for D-pad Up/Down on a tile. Return true when handled. */
-        boolean onTileVerticalKey(int position, int keyCode);
+        /** Called for D-pad directions on a tile. Return true when handled. */
+        boolean onTileDirectionKey(int position, int keyCode);
         void onOrderMoved(int position);
         void onLibraryFocused();
         void onLibraryUp();
@@ -111,27 +111,14 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             JSONArray order = new JSONArray(ctx.getSharedPreferences("home", 0).getString("app_order", "[]"));
             for (int i = 0; i < order.length(); i++) saved.add(order.getString(i));
         } catch (Exception ignored) { }
-        PackageManager pm = ctx.getPackageManager();
-        List<ResolveInfo> found = new ArrayList<>(pm.queryIntentActivities(
-                new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER), 0));
         Set<String> tvPackages = new HashSet<>();
-        for (ResolveInfo ri : found) if (ri.activityInfo != null) tvPackages.add(ri.activityInfo.packageName);
-        found.addAll(pm.queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0));
-        Set<String> seen = new HashSet<>();
         Set<String> removed = ctx.getSharedPreferences("home", 0).getStringSet("home_hidden", Collections.emptySet());
         Set<String> added = ctx.getSharedPreferences("home", 0).getStringSet("home_added", Collections.emptySet());
         library.clear();
+        library.addAll(installedApps(tvPackages));
         List<Entry> fresh = new ArrayList<>();
-        for (ResolveInfo ri : found) {
-            if (ri.activityInfo == null) continue;
-            String pkg = ri.activityInfo.packageName;
-            if (pkg.equals(ctx.getPackageName()) || !seen.add(pkg)) continue;
-            Drawable banner = ri.activityInfo.loadBanner(pm);
-            if (banner == null) banner = ri.activityInfo.applicationInfo.loadBanner(pm);
-            Drawable icon = ri.loadIcon(pm);
-            String label = String.valueOf(ri.loadLabel(pm));
-            Entry entry = new Entry(label, new ComponentName(pkg, ri.activityInfo.name), banner, icon);
-            library.add(entry);
+        for (Entry entry : library) {
+            String pkg = entry.pkg;
             if (removed.contains(pkg) || (hidden.contains(pkg) && !added.contains(pkg))
                     || (!tvPackages.contains(pkg) && !added.contains(pkg))) continue;
             fresh.add(entry);
@@ -162,6 +149,27 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
+    private List<Entry> installedApps(Set<String> tvPackages) {
+        PackageManager pm = ctx.getPackageManager();
+        List<ResolveInfo> found = new ArrayList<>(pm.queryIntentActivities(
+                new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER), 0));
+        for (ResolveInfo ri : found) if (ri.activityInfo != null) tvPackages.add(ri.activityInfo.packageName);
+        found.addAll(pm.queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0));
+        Set<String> seen = new HashSet<>();
+        List<Entry> result = new ArrayList<>();
+        for (ResolveInfo ri : found) {
+            if (ri.activityInfo == null) continue;
+            String pkg = ri.activityInfo.packageName;
+            if (pkg.equals(ctx.getPackageName()) || !seen.add(pkg)) continue;
+            Drawable banner = ri.activityInfo.loadBanner(pm);
+            if (banner == null) banner = ri.activityInfo.applicationInfo.loadBanner(pm);
+            result.add(new Entry(String.valueOf(ri.loadLabel(pm)),
+                    new ComponentName(pkg, ri.activityInfo.name), banner, ri.loadIcon(pm)));
+        }
+        result.sort((a, b) -> a.label.compareToIgnoreCase(b.label));
+        return result;
+    }
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -177,7 +185,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             button.setOnKeyListener((v, key, event) -> {
                 if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
                 if (key == KeyEvent.KEYCODE_DPAD_UP) listener.onLibraryUp();
-                return key == KeyEvent.KEYCODE_DPAD_UP || key == KeyEvent.KEYCODE_DPAD_DOWN;
+                return key == KeyEvent.KEYCODE_DPAD_UP || key == KeyEvent.KEYCODE_DPAD_DOWN
+                        || key == KeyEvent.KEYCODE_DPAD_RIGHT;
             });
             return new RecyclerView.ViewHolder(row) { };
         }
@@ -284,10 +293,13 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     private void openLibrary(View anchor, int dockSlot) {
-        List<FrostedMenu.Item> choices = new ArrayList<>();
+        // Also discover apps installed while Home remained visible, without rebuilding its tiles.
+        library.clear();
+        library.addAll(installedApps(new HashSet<>()));
+        List<AppLibraryDialog.Item> choices = new ArrayList<>();
         for (Entry entry : library) {
-            String label = entry.label + (positionOfPackage(entry.pkg) >= 0 ? "  ·  On Home" : "");
-            choices.add(new FrostedMenu.Item(label, () -> {
+            choices.add(new AppLibraryDialog.Item(entry.label, entry.icon,
+                    positionOfPackage(entry.pkg) >= 0, () -> {
                 Set<String> removed = new HashSet<>(ctx.getSharedPreferences("home", 0).getStringSet("home_hidden", Collections.emptySet()));
                 Set<String> added = new HashSet<>(ctx.getSharedPreferences("home", 0).getStringSet("home_added", Collections.emptySet()));
                 removed.remove(entry.pkg); added.add(entry.pkg);
@@ -310,7 +322,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 saveOrder(); notifyDataSetChanged(); listener.onOrderMoved(target);
             }));
         }
-        FrostedMenu.show((Activity) ctx, anchor, dockSlot >= 0 ? "Choose a dock app" : "Installed app library", choices);
+        AppLibraryDialog.show((Activity) ctx, anchor,
+                dockSlot >= 0 ? "Choose a dock app" : "App library", choices);
     }
 
     boolean cancelMove() {
@@ -503,9 +516,10 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     handledLongPress = true; view.cancelLongPress(); view.performLongClick(); return true;
                 }
                 if (owner.moveKey(keyCode)) return true;
-                if (keyCode != KeyEvent.KEYCODE_DPAD_UP && keyCode != KeyEvent.KEYCODE_DPAD_DOWN) return false;
+                if (keyCode != KeyEvent.KEYCODE_DPAD_UP && keyCode != KeyEvent.KEYCODE_DPAD_DOWN
+                        && keyCode != KeyEvent.KEYCODE_DPAD_LEFT && keyCode != KeyEvent.KEYCODE_DPAD_RIGHT) return false;
                 int pos = getBindingAdapterPosition();
-                return listener != null && pos != RecyclerView.NO_POSITION && listener.onTileVerticalKey(owner.toAppPosition(pos), keyCode);
+                return listener != null && pos != RecyclerView.NO_POSITION && listener.onTileDirectionKey(owner.toAppPosition(pos), keyCode);
             });
 
             card.setOnFocusChangeListener((view, focused) -> {

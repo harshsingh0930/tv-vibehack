@@ -1,68 +1,80 @@
-# Custom launcher variant
+# Redmi glass launcher
 
-This fork preserves the original spring animation and adds app-library/dock editing, Play Next,
-on-demand artwork, a one-shot blurred menu and optional cached-process cleanup. The upstream
-contribution guide intentionally excludes blur, network access and content feeds. These additions
-are maintained on `custom/tv-home`; the upstream contribution is limited to app organisation.
-The original contribution guide and licences remain unchanged.
+Public Home-screen fork, version 3.11-public. Based on Gathin23's launcher, with
+Play Next, remote app and dock editing, a horizontal App library, glass controls,
+artwork-matched background colours and a finite Welcome home word animation.
+The upstream reference launcher has a deliberately smaller scope; this branch
+maintains these additions separately. Code remains MIT licensed, with the
+original Outfit font licence in `launcher/FONT-LICENSE-OFL.txt`.
 
-Version 3.5 adds a **Welcome home** greeting in the dock's empty shelf space. Light, licensed
-Outfit lettering uses a pastel gradient and a finite fade/rise: Welcome appears first, with
-home following 220 ms later. Each word takes 900 ms to settle. It hides in Play Next
-and the app grid. The small text layer is rasterised for older TV GPUs; there is no looping
-animation, network request or background worker. The greeting is a nonfocusable decoration and
-does not alter D-pad targets. Its text is `welcome_home` in `res/values/strings.xml`.
-The entrance waits for the dock's vertical return to finish. Real-TV checks confirmed visible
-gradient lettering, completion of the word animation, cancellation while hidden in Play Next,
-return to the dock, and preservation of saved Home choices. A reduced-motion/disabled-animation
-system setting leaves the words fully visible immediately.
+## Build and install
 
-## Build
-
-Use JDK 17, SDK platform 34 and build-tools 34.0.0. Gradle downloads the project's pinned
-dependencies on the first build. Set `JAVA_HOME` and `ANDROID_HOME` to your installations.
+Use JDK 17, Android SDK platform 34 and build-tools 34.0.0. Set `JAVA_HOME`
+and `ANDROID_HOME`, then build from this branch:
 
 ```powershell
 .\launcher\build.ps1 -JavaHome 'C:\Java\jdk-17' -SdkPath 'C:\Android\Sdk'
 ```
 
-On macOS/Linux, set those variables and run `cd launcher && ./gradlew assembleDebug`.
-The APK is `launcher/app/build/outputs/apk/debug/app-debug.apk`. All build output, local SDK
-paths, TV reports, signing files and ADB keys stay out of version control.
+On macOS/Linux, run `cd launcher && ./gradlew assembleDebug` with the same
+environment variables. Gradle downloads the pinned dependencies on first use.
+The APK is `launcher/app/build/outputs/apk/debug/app-debug.apk`.
 
-For a manual update of an already configured TV, specify its exact ADB serial:
+For a manually configured TV, use its exact ADB serial:
 
 ```sh
 adb -s YOUR_SERIAL install -r launcher/app/build/outputs/apk/debug/app-debug.apk
 adb -s YOUR_SERIAL shell pm grant com.gathin.tvhome android.permission.READ_TV_LISTINGS
 ```
 
-These commands do not switch the Home default or disable other apps. The original
-`build-and-install.sh` does both; review `STOCK_LAUNCHER` before using it on a new TV.
-An update signed with another key cannot replace an existing installation. Keep your own
-signing key private; uninstalling to change signatures would erase launcher preferences.
+These commands install the app and grant access to Play Next entries. They do
+not disable other packages or switch the default Home. The inherited
+`build-and-install.sh` does both, so review its settings before running it.
+The app ID is `com.gathin.tvhome`: it shares the original launcher's identity.
+An update needs the same signing key; uninstalling to change signatures erases
+preferences. Keep signing material private.
 
-The example dock and tuner defaults in `config.xml` match the tested Redmi configuration.
-Change the defaults there for another model. Saved dock/hidden-app choices override defaults.
-Vendor-specific cleanup protection and eligibility also live in that file.
+The example dock, hidden-app and tuner defaults in `config.xml` match the tested
+Redmi configuration. Change them for another TV. Saved Home choices override
+those defaults. Dock and grid order, Home visibility and cleanup settings can
+be changed with the remote; neither removing a shortcut nor editing the dock
+uninstalls an app.
 
-## Validation on real hardware
+## Permissions and data use
 
-Tested on Redmi MiTV-AXFR0, Android 11/API 30, firmware
-`RTT0.210630.002.2318 release-keys`, on 18 October 2026. The custom 3.3 build passed 13 alignment
-checks covering initial Home, horizontal navigation, rapid Play Next transitions, dock return,
-three Settings/Home cycles and App library Up. Saved Home choices remained unchanged.
-The test compares actual glass/tile geometry, rather than only checking highlight visibility.
+Play Next reads resume links, progress and artwork URIs that installed apps
+publish to Android's TV provider. Those apps decide which entries are available.
+The launcher does not read streaming account credentials or scrape watch history.
+Artwork is fetched on demand from the HTTPS address in a published entry, with
+timeouts, response-size limits and a 2 MiB bitmap cache. Local content URIs are
+resolved through Android. The source in `WatchNextRow.java` documents the loader.
+
+Wi-Fi permissions let the header show network status and the current network
+name. Location permission is used for the SSID on supported Android versions;
+this launcher has no GPS lookup, location upload, analytics or account system.
+
+Optional Home cleanup requests that Android close eligible cached processes.
+It does not force-stop apps or guarantee extra free RAM. Music, VPN, downloads,
+casting and protected system packages are excluded; active services can remain.
+Android 14 and later restrict this API, so the launcher skips these requests
+there. Hold OK on Settings for the cleanup switch.
+
+## Hardware and validation
+
+The Home features were developed and tested on Redmi MiTV-AXFR0, Android 11/API 30,
+firmware `RTT0.210630.002.2318 release-keys`. This is a device-specific fork, not a
+claim of support for every Android TV. It preserves the original spring within
+app rows and uses a separate bounded tracker for the scrolling Play Next shelf.
+Horizontal row changes end the previous highlight and begin it at the next tile.
+A held Up press stops at the dock until released. The welcome animation finishes
+behind translucent TV Settings and hides in the lower app grid.
+
+The public source builds independently of the personal development checkout.
+`assembleDebug` passed for this public snapshot on 20 October 2026; the APK is
+about 1.63 MiB. Generated APKs, local SDK paths and signing files stay out of Git.
+Its minimum API is 26 and target API is 29; it is intended for ADB sideloading.
+Inherited Android lint findings include the missing Leanback app entry and an
+API-28 font style with minimum API 26; this is not a claim of Play Store readiness.
 
 ![Custom launcher dock](custom-home.png)
 ![Play Next focus](custom-play-next.png)
-
-Debug assembly passes. Lint currently reports inherited conditions: no Leanback app-launcher
-entry for the Home activity, an API-28 font style with minimum API 26, and target API 29 flagged
-by the Play-target check. This is an ADB-installed launcher, not a claim of Play Store readiness.
-Changing target SDK can change package visibility and cleanup behavior and needs separate testing.
-
-Play Next depends on apps publishing links to the Android TV provider. Artwork is loaded only
-when needed, with time/size limits and a bounded memory cache. Home cleanup asks Android to close
-eligible cached processes; it does not force-stop apps or guarantee that services disappear.
-No additional TV apps were disabled as part of preparing these Git branches.

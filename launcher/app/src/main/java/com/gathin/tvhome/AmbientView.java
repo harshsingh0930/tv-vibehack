@@ -9,20 +9,32 @@ import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /** Soft artwork-coloured light, rendered without allocating or blurring full-screen bitmaps. */
 public final class AmbientView extends View {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private ValueAnimator transition;
     private int color = 0xFF487E8C;
+    private final List<Runnable> colorFrameListeners = new ArrayList<>();
 
     public AmbientView(Context context, AttributeSet attrs) { super(context, attrs); }
+
+    void addColorFrameListener(Runnable listener) { colorFrameListeners.add(listener); }
+    void removeColorFrameListener(Runnable listener) { colorFrameListeners.remove(listener); }
+    int displayedColor() { return color; }
 
     void showColor(int next) {
         if (transition != null) transition.cancel();
         int previous = color;
         transition = ValueAnimator.ofArgb(previous, next);
         transition.setDuration(420);
-        transition.addUpdateListener(value -> { color = (int) value.getAnimatedValue(); invalidate(); });
+        transition.addUpdateListener(value -> {
+            color = (int) value.getAnimatedValue();
+            invalidate();
+            for (Runnable listener : colorFrameListeners) listener.run();
+        });
         transition.start();
         animate().cancel();
         animate().alpha(1f).setDuration(280).start();

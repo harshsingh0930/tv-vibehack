@@ -1,8 +1,19 @@
-# tv-vibehack
+# Redmi glass launcher
 
-This branch is a **custom launcher variant** with Play Next, one-shot menu blur and optional
-cached-process cleanup. Those features extend beyond the original project's contribution scope.
-See [custom build and validation notes](docs/CUSTOM-FORK.md) and [diagnostic tool setup](tools/README.md).
+An Android TV launcher fork with remote app and dock editing, a horizontal App library,
+Play Next, artwork-matched backgrounds and glass controls. Built and tested on a
+**Redmi MiTV-AXFR0 running Android TV 11**. Other models have not been verified.
+
+This is the `custom/tv-home` branch of [harshsingh0930/tv-vibehack](https://github.com/harshsingh0930/tv-vibehack/tree/custom/tv-home),
+based on [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv). The original project's
+MIT licence and Outfit font licence are retained. Start with the
+[custom build and validation notes](docs/CUSTOM-FORK.md) to build just the launcher;
+the inherited debloat/install scripts below can also change TV packages and the default Home.
+The [TV task manager](tools/README.md) is a separate, read-only desktop tool.
+
+The launcher reads app-published Play Next entries from Android's TV provider and can fetch
+their artwork over HTTPS when those entries are displayed. It has no analytics, account
+sign-in or persistent background service. See the build notes for permissions and data use.
 
 **Your TV, minus the ads.** Debloat any Android TV / Google TV over ADB and give it a clean,
 tvOS-inspired launcher. Hand the prompt to Claude Code or any coding assistant, answer a few
@@ -78,7 +89,12 @@ A small native Android TV home screen (`com.gathin.tvhome`), built for sets with
   hands the visible glass bounds to a separate direct tracker, preventing its horizontal scroll
   from fighting the spring. The same bounded bridge handles the return to app tiles; once the
   vertical scroll settles, normal app navigation resumes with the original spring.
-  No video previews, continuous blur or persistent background services.
+  Horizontal movement continues into the next app row; the highlight starts at the new tile
+  instead of flying diagonally across the grid. Holding Up while climbing from lower rows
+  stops at the dock: release and press Up again to reach Inputs, Wi-Fi and Settings.
+  Glass controls follow the changing background; their small blurred textures update on
+  backdrop changes rather than through an idle screenshot loop. No video previews or
+  persistent background services.
 - On Android 11, cached-process cleanup is enabled three seconds after Home gains focus,
   with one additional pass ten seconds later to let apps finish stopping.
   Android decides which background processes can close; this is not force-stop and active
