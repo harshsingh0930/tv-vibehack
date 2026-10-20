@@ -1,6 +1,6 @@
 # Redmi glass launcher
 
-Public Home-screen fork, version 3.11-public. Based on Gathin23's launcher, with
+Public Home-screen fork on `main`, version 3.11-public. Based on Gathin23's launcher, with
 Play Next, remote app and dock editing, a horizontal App library, glass controls,
 artwork-matched background colours and a finite Welcome home word animation.
 The upstream reference launcher has a deliberately smaller scope; this branch

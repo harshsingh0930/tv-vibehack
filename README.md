@@ -1,19 +1,81 @@
-# Redmi glass launcher
+# Redmi Glass Launcher
 
-An Android TV launcher fork with remote app and dock editing, a horizontal App library,
-Play Next, artwork-matched backgrounds and glass controls. Built and tested on a
-**Redmi MiTV-AXFR0 running Android TV 11**. Other models have not been verified.
+An Android TV launcher I customised for my **Redmi MiTV-AXFR0 running Android TV 11**.
+It adds remote app organisation, Play Next and glass controls to
+[Gathin23's original launcher](https://github.com/Gathin23/cleanyourtv).
 
-This is the `custom/tv-home` branch of [harshsingh0930/tv-vibehack](https://github.com/harshsingh0930/tv-vibehack/tree/custom/tv-home),
-based on [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv). The original project's
-MIT licence and Outfit font licence are retained. Start with the
-[custom build and validation notes](docs/CUSTOM-FORK.md) to build just the launcher;
-the inherited debloat/install scripts below can also change TV packages and the default Home.
-The [TV task manager](tools/README.md) is a separate, read-only desktop tool.
+## On the TV
 
-The launcher reads app-published Play Next entries from Android's TV provider and can fetch
-their artwork over HTTPS when those entries are displayed. It has no analytics, account
-sign-in or persistent background service. See the build notes for permissions and data use.
+| Home | Play Next |
+|---|---|
+| ![Home with the Welcome home greeting, app-coloured background and four-app dock](docs/custom-home.png) | ![Play Next with large programme cards and the floating glass selection](docs/custom-play-next.png) |
+
+Screenshots are from the Redmi test TV. Streaming apps decide which entries appear in Play Next.
+
+## What I changed
+
+- **App and dock editing:** hold OK to move apps, replace dock favourites or remove Home shortcuts.
+- **Horizontal App library:** browse installed TV and ordinary Android apps, including shortcuts removed from Home.
+- **Play Next shelf:** resume links, programme artwork and progress from Android's app-published TV provider.
+- **Glass controls:** frosted menus, a rounded Play Next panel and Inputs/Wi-Fi/Settings buttons that follow the background.
+- **Navigation:** continuous Left/Right movement through app rows, a new highlight at row crossings, stable Play Next transitions and a held-Up stop at the dock.
+- **Background and greeting:** colours sampled from the selected app or programme, plus a finite Welcome home word animation.
+- **Desktop diagnostics:** a separate, read-only TV task manager for memory, CPU, storage and processes.
+
+This is the public launcher-only version on `main`. My
+[personal build](https://github.com/harshsingh0930/tv-vibehack/tree/custom/tv-home)
+is maintained separately and includes additional screensaver experiments.
+
+## Build this version
+
+Use JDK 17, Android SDK platform 34 and build-tools 34.0.0.
+
+Windows:
+
+```powershell
+.\launcher\build.ps1 -JavaHome 'C:\Java\jdk-17' -SdkPath 'C:\Android\Sdk'
+```
+
+macOS/Linux, with `JAVA_HOME` and `ANDROID_HOME` set:
+
+```sh
+cd launcher
+./gradlew assembleDebug
+```
+
+The APK is `launcher/app/build/outputs/apk/debug/app-debug.apk`.
+See [build, installation and permissions](docs/CUSTOM-FORK.md) and
+[TV task manager setup](tools/README.md). The build command does not install an app.
+The inherited debloat/install scripts can change TV packages and the default Home.
+
+## Hardware and data use
+
+Developed on Redmi MiTV-AXFR0, Android 11/API 30; other TVs have not been verified.
+The public source builds independently of my personal checkout.
+
+Play Next reads links and progress that installed apps publish locally. Programme
+artwork can be downloaded on demand over HTTPS; unavailable art falls back to an app icon.
+There is no analytics, account sign-in or persistent background service.
+[Full details and limitations](docs/CUSTOM-FORK.md#permissions-and-data-use).
+
+## Credits and upstream contributions
+
+Original launcher and debloat tools by [Gathin23 and contributors](https://github.com/Gathin23/cleanyourtv).
+My custom Home-screen additions are maintained in this fork. The code retains the
+[MIT licence](LICENSE); Outfit retains its [SIL Open Font Licence](launcher/FONT-LICENSE-OFL.txt).
+
+The smaller installed-app library was accepted upstream in
+[upstream PR #305](https://github.com/Gathin23/cleanyourtv/pull/305).
+
+---
+
+## Original project README
+
+The original guide below is retained from the fork's starting point (`19f3c22`).
+It describes the original project. For this custom launcher, use the build notes above;
+for the author's latest guide, visit [cleanyourtv](https://github.com/Gathin23/cleanyourtv).
+
+# tv-vibehack
 
 **Your TV, minus the ads.** Debloat any Android TV / Google TV over ADB and give it a clean,
 tvOS-inspired launcher. Hand the prompt to Claude Code or any coding assistant, answer a few
@@ -54,57 +116,17 @@ step with screenshots from the TV. If you'd rather do it by hand, the pieces are
 
 A small native Android TV home screen (`com.gathin.tvhome`), built for sets with 1 GB of RAM:
 
-- A dark background with soft light sampled from the focused app or Play Next artwork.
-- **Welcome home** sits above the dock shelf in light Outfit lettering, with a pastel
-  blue–lilac–rose–peach gradient and a slow fade-and-rise entrance, staggered word by word.
-  It rests after the entrance
-  and fades away when scrolling into Play Next or the app grid.
+- Pitch-black background, like Apple TV 4K.
 - A dock at the bottom in a lighter rounded band with the four apps you choose. The shelf above
   shows the focused dock app's name in large type with an ambient glow sampled from its banner.
-  Press Down to scroll to large **Play Next** cards, followed by the rest of your apps in a grid.
-- Hold **OK** on an app and choose **Move** in the compact frosted menu. Use the arrows, then **OK** to save or **Back**
-  to cancel. The four chosen dock apps can be reordered within the dock; other apps can be
-  reordered within the grid. The order survives returning Home and launcher restarts.
-- The menu's **In dock** toggle lets you replace a dock app with a grid app, or select which
-  dock slot a grid app should replace. The displaced app remains in the grid; nothing is uninstalled.
-  Menu blur is a small, downsampled snapshot captured only when opening a menu.
-- **App library** at the bottom of Home lists installed apps with TV or standard Android
-  launcher entries, including apps hidden from Home. Choose an app to add it back. An empty
-  dock slot also opens this library to choose any installed app for that slot.
-  Its Outfit type, icon and frosted pill match the Wi-Fi and Settings controls.
-- **Remove from Home** in the long-press menu hides the shortcut without uninstalling the app
-  or clearing its data. Removing a dock app leaves an **Add app** slot. Hidden apps remain in
-  App library and can be restored there.
-- **Play Next** reads the Android TV provider's app-published resume links and progress. It
-  needs **Read TV listings** permission; apps control which shows/channels they share. It
-  does not scrape streaming accounts or generate history. Artwork loads on demand over HTTPS
-  with a 2 MiB memory cache; an app icon appears when artwork is unavailable.
-- The original translucent glass highlight glides between app tiles and Play Next artwork. Rounded
-  programme images and captions sit in a separate rounded glass panel, matching the dock.
+  Press Down and the dock slides up to reveal the rest of your apps in a grid.
+- One translucent glass highlight springs from tile to tile. The focused tile lifts and shows its
+  name.
 - Frosted pills top right: **Inputs** (a dropdown of HDMI ports, AV and Live TV), **Wi-Fi**
   (shows the network name) and **Settings**. Greeting, a large thin clock and the date top left,
   set in [Outfit](https://fonts.google.com/specimen/Outfit).
-- D-pad navigation uses the original floating-glass spring motion for the dock and app grid, with
-  the original glass styling, tile bounce, entrance animation and shelf fades. Entering Play Next
-  hands the visible glass bounds to a separate direct tracker, preventing its horizontal scroll
-  from fighting the spring. The same bounded bridge handles the return to app tiles; once the
-  vertical scroll settles, normal app navigation resumes with the original spring.
-  Horizontal movement continues into the next app row; the highlight starts at the new tile
-  instead of flying diagonally across the grid. Holding Up while climbing from lower rows
-  stops at the dock: release and press Up again to reach Inputs, Wi-Fi and Settings.
-  Glass controls follow the changing background; their small blurred textures update on
-  backdrop changes rather than through an idle screenshot loop. No video previews or
-  persistent background services.
-- On Android 11, cached-process cleanup is enabled three seconds after Home gains focus,
-  with one additional pass ten seconds later to let apps finish stopping.
-  Android decides which background processes can close; this is not force-stop and active
-  services can remain or restart. Music, VPN/tunnel, download, casting, input and system-UID
-  apps are excluded. Google Play services, the Store and Xiaomi web content are protected.
-  Cached PatchWall is eligible if enabled. On the tested Redmi MiTV-AXFR0, PatchWall is disabled
-  after verifying a fresh Xiaomi TV+ launch still plays Aajtak; its app data is retained.
-  A successful API request does not guarantee that a vendor's firmware closes a process.
-  Hold **OK** on **Settings** for the cleanup switch. Android 14+ restricts
-  this API to the launcher's own processes, so cleanup requests are skipped there.
+- Deterministic D-pad navigation, last focused tile remembered, staggered entrance animation.
+  No blur, no video, no network, no background services.
 
 Configure it in [`launcher/app/src/main/res/values/config.xml`](launcher/app/src/main/res/values/config.xml):
 dock order, hidden apps, Live TV package and columns. Build and install with
@@ -112,11 +134,6 @@ dock order, hidden apps, Live TV package and columns. Build and install with
 ```bash
 TV_HOST=192.168.1.50 launcher/build-and-install.sh
 ```
-
-For Play Next, grant the permission if it was not requested interactively:
-`adb -s YOUR_TV_SERIAL shell pm grant com.gathin.tvhome android.permission.READ_TV_LISTINGS`.
-On Windows, `launcher\build.ps1` uses `JAVA_HOME` and `ANDROID_HOME` (or explicit
-`-JavaHome` and `-SdkPath` arguments), and builds without installing or changing TV packages.
 
 Needs JDK 17 and the Android SDK (platform 34, build-tools 34.0.0). On macOS:
 `brew install openjdk@17 android-commandlinetools && sdkmanager "platforms;android-34" "build-tools;34.0.0"`.
