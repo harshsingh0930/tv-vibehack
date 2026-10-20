@@ -383,6 +383,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 .setNeutralButton("How it works", (dialog, which) -> new AlertDialog.Builder(this)
                         .setMessage("Android decides which cached processes can close. Music, VPN and casting are protected. Active services may remain.")
                         .setPositiveButton("OK", null).show())
+                .setNegativeButton("Screensaver", (dialog, which) ->
+                        open(new Intent(this, DreamSettingsActivity.class)))
                 .setPositiveButton("Done", null).show();
     }
 

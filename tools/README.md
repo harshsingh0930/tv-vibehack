@@ -50,3 +50,10 @@ python tools/review-tv-video.py issue.mp4 reports/video
 
 Video tools are optional desktop dependencies, separate from the original Python ADB client.
 The contact sheet letterboxes portrait and landscape footage and uses temporary frame files.
+
+
+The task manager also shows the custom screensaver's displayed-photo counter and three-photo
+ready buffer while it is running. **Displayed this run** includes repeats and restarts from
+zero with a new screensaver run. Downloaded file count and MiB show actual storage use, rather
+than the number displayed. Those cache statistics require the custom debug build's `run-as`
+access; they are reported as unavailable on builds that restrict it. The monitor remains read-only.

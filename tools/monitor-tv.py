@@ -59,6 +59,25 @@ def cpu_percent(current, previous, key):
     return max(0, min(100, 100 * (total - idle) / total)) if total > 0 else None
 
 
+def photo_metrics(adb, serial):
+    raw = shell(adb, serial, "dumpsys activity service com.gathin.tvhome/.WallpaperClockDream")
+    state = re.search(r"WallpaperClock dreaming=(true|false)([^\r\n]*)", raw)
+    values = dict(re.findall(r"(\w+)=([\w.-]+)", state[0])) if state else {}
+    result = {"running": values.get("dreaming") == "true", "shown": values.get("shown"),
+              "ready": values.get("ready"), "files": None, "bytes": None}
+    try:
+        listing = shell(adb, serial, "run-as com.gathin.tvhome ls -ln cache/dream-online")
+        sizes = []
+        for line in listing.splitlines():
+            fields = line.split()
+            if len(fields) >= 8 and fields[0].startswith("-") and re.fullmatch(r"c?\d+\.jpg", fields[-1]):
+                sizes.append(int(fields[4]))
+        result.update(files=len(sizes), bytes=sum(sizes))
+    except (RuntimeError, subprocess.TimeoutExpired, ValueError):
+        pass  # Private cache statistics require the installed debug build's run-as support.
+    return result
+
+
 def bar(percent, width=24):
     used = round(max(0, min(100, percent)) * width / 100)
     return "[" + "#" * used + "." * (width - used) + "]"
@@ -68,7 +87,7 @@ def mib(kib):
     return f"{kib / 1024:,.1f} MiB"
 
 
-def render(specs, sample, previous, processes, process_age, interval, error):
+def render(specs, sample, previous, processes, process_age, interval, error, photos=None):
     mem = sample["memory"]
     total = mem.get("MemTotal", 0)
     if not total:
@@ -120,6 +139,17 @@ def render(specs, sample, previous, processes, process_age, interval, error):
                   f"          {mib(disk_used)} used / {mib(disk_total)} total | {mib(disk_free)} free"]
         if disk_free / disk_total < 0.05:
             lines.append("          LOW STORAGE: less than 5% free on the app/data partition.")
+    if photos is not None:
+        if photos["running"]:
+            lines.append(f"SAVER     Displayed this run: {photos['shown'] or '--'} | Upcoming ready: {photos['ready'] or '0'}/3")
+        else:
+            lines.append("SAVER     Inactive (displayed counter starts again with each screensaver run)")
+        if photos["bytes"] is not None:
+            lines.append(f"PHOTOS    {photos['files']} downloaded files | {photos['bytes'] / (1024 * 1024):.2f} / 8 MiB cache")
+        else:
+            lines.append("PHOTOS    Download cache size unavailable on this build")
+        lines += ["          Old unneeded downloads are evicted at the cache limit; next 3 stay ready.",
+                  "          9 built-in offline photos are separate. Displayed includes repeats."]
     lines += ["-" * 78, f"LARGEST PROCESSES (PSS, proportional share of RAM; updated {process_age:.0f}s ago)",
               "   MiB      PID   Process"]
     for size, name, pid in processes:
@@ -169,6 +199,7 @@ def main():
     previous = parse_sample(shell(adb, args.serial, command))["cpus"]
     time.sleep(0.5)
     processes = []
+    photos = None
     process_updated = 0
     count = 0
     live = sys.stdout.isatty() and not args.no_clear and not args.once
@@ -188,8 +219,12 @@ def main():
                     process_updated = time.monotonic()
                 except (RuntimeError, subprocess.TimeoutExpired) as exc:
                     error = str(exc)
+                try:
+                    photos = photo_metrics(adb, args.serial)
+                except (RuntimeError, subprocess.TimeoutExpired):
+                    photos = None
             sample = parse_sample(shell(adb, args.serial, command))
-            frame = render(specs, sample, previous, processes, time.monotonic() - process_updated, args.interval, error)
+            frame = render(specs, sample, previous, processes, time.monotonic() - process_updated, args.interval, error, photos)
             if live:
                 sys.stdout.write("\x1b[H\x1b[2J")
             print(frame, flush=True)

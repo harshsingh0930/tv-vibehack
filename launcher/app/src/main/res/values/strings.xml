@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Home</string>
     <string name="welcome_home">Welcome home</string>
+    <string name="wallpaper_clock">Wallpaper + clock</string>
     <string name="inputs">Inputs</string>
     <string name="wifi">Wi-Fi</string>
     <string name="settings">Settings</string>

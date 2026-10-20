@@ -35,5 +35,21 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".DreamSettingsActivity"
+            android:exported="true" android:screenOrientation="landscape"
+            android:label="@string/wallpaper_clock" />
+
+        <service
+            android:name=".WallpaperClockDream"
+            android:exported="true"
+            android:label="@string/wallpaper_clock"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data android:name="android.service.dream" android:resource="@xml/wallpaper_clock" />
+        </service>
     </application>
 </manifest>

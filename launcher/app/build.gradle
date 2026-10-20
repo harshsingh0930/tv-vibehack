@@ -11,7 +11,8 @@ android {
         minSdk 26
         targetSdk 29
         versionCode 23
-        versionName '3.11-public'
+        versionName '3.11'
+        testInstrumentationRunner 'com.gathin.tvhome.DreamFeedChecks'
     }
 
     buildTypes {
