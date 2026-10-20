@@ -1,26 +1,53 @@
 # Redmi Glass Launcher
 
 An Android TV launcher I customised for my **Redmi MiTV-AXFR0 running Android TV 11**.
-It adds remote app organisation, Play Next and glass controls to
+It builds on
 [Gathin23's original launcher](https://github.com/Gathin23/cleanyourtv).
+This version focuses on a Play Next shelf, frosted controls and consistent
+selection effects across the dock, programmes and app grid.
 
 ## On the TV
 
-| Home | Play Next |
+| YouTube selected | CloudStream selected |
 |---|---|
-| ![Home with the Welcome home greeting, app-coloured background and four-app dock](docs/custom-home.png) | ![Play Next with large programme cards and the floating glass selection](docs/custom-play-next.png) |
+| ![YouTube selected with a red background glow and Welcome home greeting](docs/custom-home.png) | ![CloudStream selected with a blue background glow](docs/custom-home-cloudstream.png) |
 
-Screenshots are from the Redmi test TV. Streaming apps decide which entries appear in Play Next.
+The background takes its colour from the selected app. This is a colour glow,
+not a downloaded wallpaper; the original launcher also has dock colour effects.
 
-## What I changed
+| Play Next with real entries | Hold OK for app controls |
+|---|---|
+| ![Aajtak and Indian Yoga and Wellness TV from Xiaomi TV+, plus a BrowseHere entry, in the connected glass Play Next panel](docs/custom-play-next.png) | ![Compact frosted menu with Move, App info, In dock and Remove from Home](docs/custom-app-menu.png) |
 
-- **App and dock editing:** hold OK to move apps, replace dock favourites or remove Home shortcuts.
-- **Horizontal App library:** browse installed TV and ordinary Android apps, including shortcuts removed from Home.
+Play Next reads what installed apps publish to Android's TV provider. These
+captures show the entries currently on my TV, including Xiaomi TV+ live channels
+and BrowseHere links. Other apps may publish different entries or none at all.
+
+| App grid below Play Next | Horizontal App Library |
+|---|---|
+| ![Amazon miniTV selected below Play Next with its pink background glow](docs/custom-app-grid.png) | ![Frosted horizontal App Library with installed apps, Home status and app count](docs/custom-app-library.png) |
+
+The glow also follows apps below the dock. App Library shows this fork's frosted
+presentation; an installed-app library is now available in upstream too.
+All six screenshots are native 1280 × 720 captures from the Redmi test TV.
+
+## What this fork changes
+
 - **Play Next shelf:** resume links, programme artwork and progress from Android's app-published TV provider.
-- **Glass controls:** frosted menus, a rounded Play Next panel and Inputs/Wi-Fi/Settings buttons that follow the background.
-- **Navigation:** continuous Left/Right movement through app rows, a new highlight at row crossings, stable Play Next transitions and a held-Up stop at the dock.
-- **Background and greeting:** colours sampled from the selected app or programme, plus a finite Welcome home word animation.
+- **Frosted presentation:** a connected Play Next title and panel, compact app menus, a horizontal app picker and Inputs/Wi-Fi/Settings buttons that follow the background.
+- **Selection across sections:** the original spring within app rows, a separate tracker for scrolling Play Next cards, a fresh highlight at row crossings and a held-Up stop at the dock.
+- **Background and greeting:** colours follow programmes and lower app rows as well as dock apps, alongside a finite Welcome home word animation.
+- **App controls:** hold OK for Move, App info, dock replacement and Home-shortcut removal in one compact menu.
 - **Desktop diagnostics:** a separate, read-only TV task manager for memory, CPU, storage and processes.
+
+### Shared with upstream
+
+The original project already provides the dock, clock, glass selection and
+app-coloured dock glow. Current upstream also supports app reordering and an
+installed-app library. My smaller App Library contribution was merged in
+[PR #305](https://github.com/Gathin23/cleanyourtv/pull/305).
+The gallery shows how these pieces look together in this fork; it does not claim
+that every feature was invented here or is exclusive to this build.
 
 This is the public launcher-only version on `main`. My
 [personal build](https://github.com/harshsingh0930/tv-vibehack/tree/custom/tv-home)
