@@ -83,18 +83,22 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<Entry> items = new ArrayList<>();
     private final List<Entry> library = new ArrayList<>();
     private final WatchNextRow watchNext;
+    private final HomeTheme theme;
+    private int tileWidth;
     private int moving = -1;
     private List<Entry> beforeMove;
 
-    AppAdapter(Context ctx, TileListener listener, int dockSize, WatchNextRow watchNext) {
+    AppAdapter(Context ctx, TileListener listener, int dockSize, WatchNextRow watchNext, HomeTheme theme) {
         this.ctx = ctx;
         this.listener = listener;
         this.dockSize = dockSize;
         this.watchNext = watchNext;
-        this.favourites = new ArrayList<>(Arrays.asList(ctx.getResources().getStringArray(R.array.dock_apps)));
+        this.theme = theme;
+        this.tileWidth = HomeLayout.tileWidth(ctx.getResources().getConfiguration().screenWidthDp - 64, dockSize, theme.mountain);
+        this.favourites = new ArrayList<>(theme.dockApps);
         this.hidden = new HashSet<>(Arrays.asList(ctx.getResources().getStringArray(R.array.hidden_apps)));
         try {
-            JSONArray savedDock = new JSONArray(ctx.getSharedPreferences("home", 0).getString("dock_apps", "[]"));
+            JSONArray savedDock = new JSONArray(ctx.getSharedPreferences("home", 0).getString(theme.dockKey(), "[]"));
             List<String> custom = new ArrayList<>();
             for (int i = 0; i < savedDock.length(); i++) {
                 String pkg = savedDock.getString(i);
@@ -108,7 +112,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         moving = -1;
         List<String> saved = new ArrayList<>();
         try {
-            JSONArray order = new JSONArray(ctx.getSharedPreferences("home", 0).getString("app_order", "[]"));
+            JSONArray order = new JSONArray(ctx.getSharedPreferences("home", 0).getString(theme.orderKey(), "[]"));
             for (int i = 0; i < order.length(); i++) saved.add(order.getString(i));
         } catch (Exception ignored) { }
         Set<String> tvPackages = new HashSet<>();
@@ -122,6 +126,11 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             if (removed.contains(pkg) || (hidden.contains(pkg) && !added.contains(pkg))
                     || (!tvPackages.contains(pkg) && !added.contains(pkg))) continue;
             fresh.add(entry);
+        }
+        // Pinned apps can have only an ordinary LAUNCHER entry (notably Play Store on some TVs).
+        for (Entry entry : library) {
+            if (favourites.contains(entry.pkg) && !removed.contains(entry.pkg)
+                    && (!hidden.contains(entry.pkg) || added.contains(entry.pkg)) && !fresh.contains(entry)) fresh.add(entry);
         }
         Collections.sort(fresh, (a, b) -> {
             int fa = favourites.indexOf(a.pkg), fb = favourites.indexOf(b.pkg);
@@ -137,14 +146,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return a.label.compareToIgnoreCase(b.label);
         });
         items.clear();
-        for (int slot = 0; slot < dockSize; slot++) {
-            Entry pinned = null;
-            String pkg = slot < favourites.size() ? favourites.get(slot) : "";
-            for (Entry entry : fresh) if (entry.pkg.equals(pkg)) { pinned = entry; break; }
-            items.add(pinned == null ? emptySlot() : pinned);
-            if (pinned != null) fresh.remove(pinned);
-        }
-        items.addAll(fresh);
+        for (Entry entry : DockOrder.arrange(fresh, favourites, dockSize, theme.mountain, e -> e.pkg))
+            items.add(entry == null ? emptySlot() : entry);
         library.sort((a, b) -> a.label.compareToIgnoreCase(b.label));
         notifyDataSetChanged();
     }
@@ -174,6 +177,11 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == 1) {
+            if (!watchNext.isEnabled()) {
+                View spacer = new View(ctx);
+                spacer.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
+                return new RecyclerView.ViewHolder(spacer) { };
+            }
             View row = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_watch_next, parent, false);
             return new RecyclerView.ViewHolder(row) { };
         }
@@ -200,9 +208,10 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (getItemViewType(adapterPosition) == 2) return;
         Holder h = (Holder) holder;
         int position = toAppPosition(adapterPosition);
+        if (theme.mountain) sizeTile(h, position < dockSize);
         Entry e = items.get(position);
         h.name.setText(e.label);
-        h.name.setVisibility(position < dockSize ? View.INVISIBLE : View.VISIBLE);   // the dock has no labels
+        h.name.setVisibility(position < dockSize ? (theme.mountain ? View.GONE : View.INVISIBLE) : View.VISIBLE);
         h.name.setAlpha(0f);
         h.card.setScaleX(h.card.hasFocus() ? FOCUS_SCALE : 1f);
         h.card.setScaleY(h.card.hasFocus() ? FOCUS_SCALE : 1f);
@@ -245,7 +254,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         });
     }
 
-    private void launch(Entry e) {
+    void launch(Entry e) {
         Intent i = new Intent(Intent.ACTION_MAIN)
                 .addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER)
                 .setComponent(e.component)
@@ -255,6 +264,38 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         } catch (Exception ex) {
             Toast.makeText(ctx, "Can't open " + e.label, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    List<Entry> searchableApps() { return installedApps(new HashSet<>()); }
+
+    void setAvailableWidth(int widthPx) {
+        float density = ctx.getResources().getDisplayMetrics().density;
+        int next = HomeLayout.tileWidth((int) (widthPx / density), dockSize, theme.mountain);
+        if (tileWidth == next) return;
+        tileWidth = next;
+        notifyDataSetChanged();
+    }
+
+    int dockRowHeight() { return HomeLayout.itemHeight(tileWidth, true, theme.mountain) + 18; }
+
+    private void sizeTile(Holder holder, boolean dock) {
+        float d = ctx.getResources().getDisplayMetrics().density;
+        int height = HomeLayout.tileHeight(tileWidth, true);
+        ViewGroup.LayoutParams card = holder.card.getLayoutParams();
+        card.width = Math.round(tileWidth * d); card.height = Math.round(height * d);
+        holder.card.setLayoutParams(card);
+        FrameLayout.LayoutParams name = (FrameLayout.LayoutParams) holder.name.getLayoutParams();
+        name.width = card.width; name.topMargin = Math.round((height + 7) * d);
+        holder.name.setLayoutParams(name);
+        ViewGroup.LayoutParams item = holder.itemView.getLayoutParams();
+        item.height = Math.round(HomeLayout.itemHeight(tileWidth, dock, true) * d);
+        holder.itemView.setLayoutParams(item);
+        ViewGroup.LayoutParams icon = holder.icon.getLayoutParams();
+        icon.width = icon.height = Math.round(Math.min(36, height * .55f) * d);
+        holder.icon.setLayoutParams(icon);
+        holder.label.setTextSize(10);
+        holder.label.setPadding(Math.round(5 * d), 0, Math.round(5 * d), Math.round(4 * d));
+        holder.banner.setScaleType(ImageView.ScaleType.CENTER_CROP);
     }
 
     @Override
@@ -360,8 +401,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             Entry e = items.get(i); if (e.component != null) order.put(e.component.flattenToString());
             if (i < dockSize) { favourites.add(e.pkg); dock.put(e.pkg); }
         }
-        ctx.getSharedPreferences("home", 0).edit().putString("app_order", order.toString())
-                .putString("dock_apps", dock.toString()).apply();
+        ctx.getSharedPreferences("home", 0).edit().putString(theme.orderKey(), order.toString())
+                .putString(theme.dockKey(), dock.toString()).apply();
     }
 
     private void finishMove(boolean cancel) {
@@ -527,7 +568,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 view.animate().cancel();
                 view.animate().scaleX(s).scaleY(s)
                         .setDuration(focused ? 260 : 180)
-                        .setInterpolator(new OvershootInterpolator(focused ? 1.6f : 0f))
+                        .setInterpolator(new OvershootInterpolator(focused && !owner.theme.mountain ? 1.6f : 0f))
                         .start();
                 name.animate().alpha(focused ? 1f : 0f)
                         .translationY(focused ? density * 4f : -density * 6f)

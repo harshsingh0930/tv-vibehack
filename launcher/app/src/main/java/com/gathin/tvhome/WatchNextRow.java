@@ -50,6 +50,7 @@ final class WatchNextRow {
     private static final Uri URI = Uri.parse("content://android.media.tv/watch_next_program");
     private final Activity activity;
     private final Navigation navigation;
+    private final boolean enabled;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private final LruCache<String, Bitmap> images = new LruCache<String, Bitmap>(2 * 1024 * 1024) {
@@ -73,12 +74,16 @@ final class WatchNextRow {
         }
     };
 
-    WatchNextRow(Activity activity, Navigation navigation) {
+    WatchNextRow(Activity activity, Navigation navigation, boolean enabled) {
         this.activity = activity;
         this.navigation = navigation;
+        this.enabled = enabled;
     }
 
+    boolean isEnabled() { return enabled; }
+
     void attach(View row) {
+        if (!enabled) return;
         LinearLayout next = row.findViewById(R.id.watchCards);
         if (next == cards && cards.getChildCount() > 0) return;
         cards = next;
@@ -91,6 +96,7 @@ final class WatchNextRow {
     }
 
     void resume() {
+        if (!enabled) return;
         if (!observing) {
             try {
                 activity.getContentResolver().registerContentObserver(URI, true, observer);
@@ -110,6 +116,7 @@ final class WatchNextRow {
     void destroy() { pause(); destroyed = true; worker.shutdownNow(); images.evictAll(); }
 
     boolean focus(int column) {
+        if (!enabled) return false;
         if (cards == null || !cards.isAttachedToWindow() || cards.getChildCount() == 0) return false;
         selected = Math.max(0, Math.min(column, cards.getChildCount() - 1));
         return cards.getChildAt(selected).findViewById(R.id.card).requestFocus();

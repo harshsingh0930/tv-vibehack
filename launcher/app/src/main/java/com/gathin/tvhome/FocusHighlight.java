@@ -26,14 +26,14 @@ final class FocusHighlight implements ViewTreeObserver.OnPreDrawListener {
     private View card;
     private final Rect anchorBounds = new Rect();
 
-    FocusHighlight(ViewGroup root, GlassView glass) {
+    FocusHighlight(ViewGroup root, GlassView glass, boolean calmMotion) {
         this.root = root;
         this.glass = glass;
         density = root.getResources().getDisplayMetrics().density;
         springX = new SpringAnimation(glass, DynamicAnimation.TRANSLATION_X);
         springY = new SpringAnimation(glass, DynamicAnimation.TRANSLATION_Y);
         for (SpringAnimation spring : new SpringAnimation[]{springX, springY}) {
-            spring.setSpring(new SpringForce().setStiffness(260f).setDampingRatio(0.58f));
+            spring.setSpring(new SpringForce().setStiffness(260f).setDampingRatio(calmMotion ? 1f : 0.58f));
         }
     }
 

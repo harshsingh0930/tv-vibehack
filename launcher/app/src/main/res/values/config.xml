@@ -5,6 +5,10 @@
 -->
 <resources>
 
+    <!-- Public edition: hold OK on Settings to switch between Mountain Glass and the classic look. -->
+    <bool name="mountain_glass_default">true</bool>
+    <bool name="play_next_default">false</bool>
+
     <!-- Apps pinned to the dock row at the bottom, in this order. Missing apps are skipped. -->
     <string-array name="dock_apps">
         <item>com.google.android.youtube.tv</item>

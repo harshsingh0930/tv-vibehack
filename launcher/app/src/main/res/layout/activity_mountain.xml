@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#142733">
+
+    <ImageView android:id="@+id/wallpaper" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:scaleType="centerCrop"
+        android:importantForAccessibility="no" android:contentDescription="@null" />
+
+    <com.gathin.tvhome.AmbientView android:id="@+id/ambient" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:visibility="gone" />
+    <com.gathin.tvhome.WelcomeView android:id="@+id/welcome" android:layout_width="0dp"
+        android:layout_height="0dp" android:visibility="gone" />
+    <TextView android:id="@+id/heroName" android:layout_width="0dp"
+        android:layout_height="0dp" android:visibility="gone" />
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:paddingStart="28dp" android:paddingEnd="28dp"
+        android:paddingTop="18dp">
+
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+            <LinearLayout android:id="@+id/leftBlock" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView android:id="@+id/greeting" android:layout_width="0dp"
+                    android:layout_height="0dp" android:visibility="gone" />
+                <com.gathin.tvhome.AccentClock android:id="@+id/clock"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:textColor="#FFFFFF" android:textSize="94sp" android:fontFamily="@font/outfit"
+                    android:fontVariationSettings="'wght' 800" android:letterSpacing="-0.01"
+                    android:fontFeatureSettings="tnum" android:layout_marginBottom="-10dp"
+                    android:includeFontPadding="false" android:singleLine="true" />
+                <TextClock android:id="@+id/date" android:layout_width="wrap_content"
+                    android:layout_height="60dp" android:layout_marginTop="2dp"
+                    android:format12Hour="d-MMMM" android:format24Hour="d-MMMM"
+                    android:background="@drawable/mountain_date" android:gravity="center"
+                    android:paddingStart="18dp" android:paddingEnd="18dp"
+                    android:fontFamily="@font/outfit" android:fontVariationSettings="'wght' 400"
+                    android:textColor="#E6EDF0" android:textSize="24sp" android:includeFontPadding="false" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/topButtons" android:layout_width="wrap_content"
+                android:layout_height="64dp" android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true" android:layout_marginTop="4dp"
+                android:gravity="center_vertical" android:orientation="horizontal">
+                <!-- Keeps the original first-header ID so all existing D-pad edge handling is shared. -->
+                <com.gathin.tvhome.LiquidGlassButton android:id="@+id/btnInputs"
+                    style="@style/MountainIconButton" android:drawableStart="@drawable/ic_search"
+                    android:contentDescription="@string/search_apps" android:tooltipText="@string/search_apps"
+                    android:nextFocusRight="@+id/btnWifi" android:nextFocusDown="@+id/grid" />
+                <com.gathin.tvhome.LiquidGlassButton android:id="@+id/btnWifi"
+                    style="@style/MountainNetworkButton" android:text="@string/wifi"
+                    android:drawableStart="@drawable/ic_wifi" android:nextFocusLeft="@id/btnInputs"
+                    android:nextFocusRight="@+id/btnSettings" android:nextFocusDown="@id/grid" />
+                <com.gathin.tvhome.LiquidGlassButton android:id="@+id/btnSettings"
+                    style="@style/MountainIconButton" android:drawableStart="@drawable/ic_settings"
+                    android:contentDescription="@string/settings" android:tooltipText="@string/settings"
+                    android:nextFocusLeft="@id/btnWifi" android:nextFocusDown="@id/grid" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1" android:layout_marginTop="10dp">
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/grid"
+                android:layout_width="match_parent" android:layout_height="match_parent"
+                android:paddingStart="4dp" android:paddingEnd="4dp" android:paddingBottom="40dp"
+                android:clipToPadding="false" android:clipChildren="false" android:overScrollMode="never"
+                android:scrollbars="none" android:descendantFocusability="afterDescendants" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <com.gathin.tvhome.GlassView android:id="@+id/glass" android:layout_width="10dp"
+        android:layout_height="10dp" android:alpha="0" android:importantForAccessibility="no" />
+    <com.gathin.tvhome.TrackedGlassView android:id="@+id/playNextGlass" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:alpha="0" android:importantForAccessibility="no" />
+</FrameLayout>

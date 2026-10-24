@@ -1,6 +1,6 @@
 # Redmi glass launcher
 
-Public Home-screen fork on `main`, version 3.11-public. Based on Gathin23's launcher, with
+Public Home-screen fork on `main`, version 3.12-public. Based on Gathin23's launcher, with
 Play Next, remote app and dock editing, a horizontal App library, glass controls,
 artwork-matched background colours and a finite Welcome home word animation.
 The upstream reference launcher has a deliberately smaller scope. It now also
@@ -8,6 +8,12 @@ has app reordering and an installed-app library, including my merged PR #305.
 This branch retains its own frosted presentation and Play Next integration;
 not every capability listed above is exclusive to it. Code remains MIT licensed, with the
 original Outfit font licence in `launcher/FONT-LICENSE-OFL.txt`.
+
+[Mountain Glass](../themes/mountain-glass/README.md) adds the reference-inspired
+wallpaper, clock, date pill, search and seven-slot glass dock to the public
+edition. Hold OK on Settings to switch to the classic look; the two looks keep
+separate dock and app-order preferences. The original screenshots below show
+the classic look. Mountain Glass Home, dock navigation and filtered glass search were checked on the real TV; see the current screenshots in the root README.
 
 ## Build and install
 

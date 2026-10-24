@@ -17,4 +17,16 @@
     <string name="good_night">Good night</string>
     <string name="ethernet">Ethernet</string>
     <string name="offline">Offline</string>
+    <string name="search_apps">Search apps</string>
+    <string name="search_apps_hint">Search installed apps</string>
+    <string name="no_matching_apps">No matching apps</string>
+    <string name="mountain_glass">Mountain Glass theme</string>
+    <string name="show_play_next">Show Play Next</string>
+    <string name="close_search">Close search</string>
+    <string name="search_keyboard_hint">Press OK to type · Down to browse apps</string>
+    <string name="search_results_hint">Left / Right to browse · OK to open · Up to search</string>
+    <plurals name="search_app_count">
+        <item quantity="one">%d app</item>
+        <item quantity="other">%d apps</item>
+    </plurals>
 </resources>

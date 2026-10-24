@@ -26,4 +26,22 @@
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
     </style>
+    <style name="MountainIconButton" parent="TopButton">
+        <item name="android:layout_width">62dp</item>
+        <item name="android:layout_height">62dp</item>
+        <item name="android:layout_marginStart">10dp</item>
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+        <item name="android:drawablePadding">0dp</item>
+    </style>
+    <style name="MountainNetworkButton" parent="TopButton">
+        <item name="android:layout_height">62dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:textSize">22sp</item>
+    </style>
+    <style name="SearchPopupAnimation">
+        <item name="android:windowEnterAnimation">@anim/search_popup_enter</item>
+        <item name="android:windowExitAnimation">@anim/search_popup_exit</item>
+    </style>
 </resources>

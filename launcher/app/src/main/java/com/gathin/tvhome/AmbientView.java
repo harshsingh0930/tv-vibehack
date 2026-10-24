@@ -41,6 +41,8 @@ public final class AmbientView extends View {
     }
 
     @Override protected void onDraw(Canvas canvas) {
+        // Glass backdrops can sample this view before layout or while the theme keeps it GONE.
+        if (getWidth() <= 0 || getHeight() <= 0) return;
         float radius = getWidth() * .62f;
         int rgb = color & 0xFFFFFF;
         paint.setShader(new RadialGradient(getWidth() * .32f, getHeight() * .42f, radius,

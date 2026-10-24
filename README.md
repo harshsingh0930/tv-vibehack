@@ -6,6 +6,18 @@ It builds on
 This version focuses on a Play Next shelf, frosted controls and consistent
 selection effects across the dock, programmes and app grid.
 
+The public edition now includes [Mountain Glass](themes/mountain-glass/README.md):
+a mountain wallpaper, red-hour clock, date pill, seven-app glass dock and offline
+app search. It is the default look; hold OK on Settings to switch back to the
+classic app-colour Home. Play Next starts off and can be enabled from the same menu.
+
+| Mountain Glass on the TV | Frosted app search |
+|---|---|
+| ![Mountain Glass Home](docs/mountain-home.png) | ![Search with installed app icons](docs/mountain-search.png) |
+
+Search uses the existing frosted backdrop, animated focus and installed app icons.
+These are real captures from the Redmi MiTV-AXFR0 on Android TV 11.
+
 ## On the TV
 
 | YouTube selected | CloudStream selected |
@@ -34,6 +46,7 @@ All six screenshots are native 1280 × 720 captures from the Redmi test TV.
 ## What this fork changes
 
 - **Play Next shelf:** resume links, programme artwork and progress from Android's app-published TV provider.
+- **Mountain Glass theme:** bundled landscape, a live coloured clock, date pill, offline app search and a compact seven-slot dock, with separate saved ordering from the classic look.
 - **Frosted presentation:** a connected Play Next title and panel, compact app menus, a horizontal app picker and Inputs/Wi-Fi/Settings buttons that follow the background.
 - **Selection across sections:** the original spring within app rows, a separate tracker for scrolling Play Next cards, a fresh highlight at row crossings and a held-Up stop at the dock.
 - **Background and greeting:** colours follow programmes and lower app rows as well as dock apps, alongside a finite Welcome home word animation.
@@ -74,6 +87,20 @@ The APK is `launcher/app/build/outputs/apk/debug/app-debug.apk`.
 See [build, installation and permissions](docs/CUSTOM-FORK.md) and
 [TV task manager setup](tools/README.md). The build command does not install an app.
 The inherited debloat/install scripts can change TV packages and the default Home.
+
+## Use with the remote
+
+After building, follow the [installation steps](docs/CUSTOM-FORK.md#build-and-install).
+To try it alongside your existing Home, use the separate
+[preview build](themes/mountain-glass/README.md#preview-without-replacing-home).
+
+- Use Left/Right to select an app and OK to launch it. Down opens the lower app grid.
+- Select Search to filter installed apps by name or package. Press OK in the field
+  to type, Down to browse matching app icons, and Back to close search.
+- Hold OK on Settings to switch **Mountain Glass theme** or **Show Play Next**.
+  Play Next is off by default. Each look remembers its own app ordering.
+- Hold OK on an app for app controls, including moving it or editing the dock.
+- Hold OK on Search for Inputs.
 
 ## Hardware and data use
 

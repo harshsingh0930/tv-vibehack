@@ -24,6 +24,7 @@ import android.widget.TextView;
 public final class LiquidGlassButton extends TextView {
     private final Surface surface;
     private float requestedScale = .985f;
+    private final Rect iconBounds = new Rect();
 
     public LiquidGlassButton(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -39,6 +40,22 @@ public final class LiquidGlassButton extends TextView {
     @Override protected void drawableStateChanged() {
         super.drawableStateChanged();
         if (surface != null) updateGlassState();
+    }
+
+    @Override protected void onDraw(Canvas canvas) {
+        if (getText().length() == 0) {
+            Drawable icon = getCompoundDrawablesRelative()[0];
+            if (icon != null) {
+                iconBounds.set(icon.getBounds());
+                int width = Math.max(1, icon.getIntrinsicWidth()), height = Math.max(1, icon.getIntrinsicHeight());
+                int left = (getWidth() - width) / 2, top = (getHeight() - height) / 2;
+                icon.setBounds(left, top, left + width, top + height);
+                icon.draw(canvas);
+                icon.setBounds(iconBounds);
+                return;
+            }
+        }
+        super.onDraw(canvas);
     }
 
     private void updateGlassState() {

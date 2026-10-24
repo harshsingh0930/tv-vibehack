@@ -7,6 +7,8 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
@@ -54,6 +56,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     static int COLUMNS = 4;
     private static final long MINUTE_MS = 60_000L;
     private String liveTvPkg;
+    private HomeTheme theme;
+    private boolean playNextEnabled;
+    private Bitmap wallpaperBitmap;
 
     private AppAdapter adapter;
     private RecyclerView grid;
@@ -69,6 +74,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean heroShown;
     private TextView greeting;
     private TextView btnWifi;
+    private PopupWindow searchPopup;
     private FocusHighlight highlight;
     private PlayNextHighlight playNextHighlight;
     private View pendingOriginalCard;
@@ -100,6 +106,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private final Runnable cleanup = this::runCleanup;
 
     private void runCleanup() {
+        // A preview must never close another app's process while it is being reviewed.
+        if (getResources().getBoolean(R.bool.is_preview)) return;
         if (!homeResumed || !hasWindowFocus() || !getSharedPreferences("home", 0).getBoolean("cleanup", true)) return;
         ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
         if (manager == null || android.os.Build.VERSION.SDK_INT >= 34) return;
@@ -134,9 +142,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        theme = HomeTheme.load(this);
+        playNextEnabled = getSharedPreferences("home", 0).getBoolean("play_next",
+                getResources().getBoolean(R.bool.play_next_default));
+        setContentView(theme.mountain ? R.layout.activity_mountain : R.layout.activity_main);
         density = getResources().getDisplayMetrics().density;
-        COLUMNS = Math.max(1, getResources().getInteger(R.integer.columns));
+        COLUMNS = theme.columns;
         liveTvPkg = getString(R.string.live_tv_package).trim();
 
         root = findViewById(R.id.root);
@@ -147,6 +158,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         welcome = findViewById(R.id.welcome);
         greeting = findViewById(R.id.greeting);
         btnWifi = findViewById(R.id.btnWifi);
+        if (theme.mountain) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            options.inScaled = false;
+            try (java.io.InputStream wallpaper = getAssets().open("mountain-glass/wallpaper.jpg")) {
+                wallpaperBitmap = BitmapFactory.decodeStream(wallpaper, null, options);
+            } catch (java.io.IOException missingWallpaper) {
+                android.util.Log.w("HomeTheme", "Wallpaper unavailable; keeping the plain backdrop", missingWallpaper);
+            }
+            ((ImageView) findViewById(R.id.wallpaper)).setImageBitmap(wallpaperBitmap);
+        }
 
         grid = findViewById(R.id.grid);
         GridLayoutManager layout = new GridLayoutManager(this, COLUMNS) {
@@ -166,7 +188,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         grid.setLayoutManager(layout);
         grid.setHasFixedSize(true);
         grid.setItemAnimator(null);
-        grid.addItemDecoration(new DockDecoration(COLUMNS, density));
+        grid.addItemDecoration(new DockDecoration(COLUMNS, density, theme.mountain));
         grid.setLayoutAnimation(new LayoutAnimationController(
                 AnimationUtils.loadAnimation(this, R.anim.tile_enter), 0.06f));
         watchNext = new WatchNextRow(this, new WatchNextRow.Navigation() {
@@ -191,21 +213,22 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             @Override public void ambientChanged(int color) {
                 if (homeResumed && focusedSection == 1) setAmbient(color);
             }
-        });
-        adapter = new AppAdapter(this, this, COLUMNS, watchNext);
+        }, playNextEnabled);
+        adapter = new AppAdapter(this, this, COLUMNS, watchNext, theme);
         grid.setAdapter(adapter);
 
         // tvOS layout: push the dock row to the bottom of the screen; the grid hides below until you press Down.
         grid.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
             int h = b - t;
-            int dockRow = (int) ((145 + 6 + 12) * density);   // item height plus DockDecoration offsets
-            int want = Math.max(0, h - dockRow - (int) (30 * density));
+            adapter.setAvailableWidth(r - l - grid.getPaddingLeft() - grid.getPaddingRight());
+            int dockRow = Math.round(adapter.dockRowHeight() * density);
+            int want = Math.max(0, h - dockRow - (int) ((theme.mountain ? 40 : 30) * density));
             if (grid.getPaddingTop() != want) {
                 grid.setPadding(grid.getPaddingLeft(), want, grid.getPaddingRight(), grid.getPaddingBottom());
             }
         });
 
-        highlight = new FocusHighlight(root, glass);
+        highlight = new FocusHighlight(root, glass, theme.mountain);
         playNextHighlight = new PlayNextHighlight(root, grid, playNextGlass);
         grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -223,7 +246,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         View btnSettings = findViewById(R.id.btnSettings);
         headerGlass = new HeaderGlass(root, ambient, findViewById(R.id.topButtons),
                 (LiquidGlassButton) btnInputs, (LiquidGlassButton) btnWifi, (LiquidGlassButton) btnSettings);
-        btnInputs.setOnClickListener(v -> showInputs());
+        if (theme.mountain) headerGlass.setWallpaper(findViewById(R.id.wallpaper));
+        btnInputs.setOnClickListener(v -> {
+            if (theme.mountain) searchPopup = AppSearchDialog.show(this, v, adapter);
+            else showInputs();
+        });
+        if (theme.mountain) btnInputs.setOnLongClickListener(v -> { showInputs(); return true; });
         btnWifi.setOnClickListener(v -> open(new Intent(Settings.ACTION_WIFI_SETTINGS)));
         btnSettings.setOnClickListener(v -> open(new Intent(Settings.ACTION_SETTINGS)));
         btnSettings.setOnLongClickListener(v -> { showLauncherOptions(); return true; });
@@ -311,6 +339,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onPause() {
         homeResumed = false;
+        if (searchPopup != null) { searchPopup.dismiss(); searchPopup = null; }
         upHeld = upStartedBelowDock = false;
         headerGlass.pause();
         super.onPause();
@@ -369,17 +398,31 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override protected void onDestroy() {
         handler.removeCallbacksAndMessages(null);
         watchNext.destroy();
+        if (wallpaperBitmap != null) {
+            ((ImageView) findViewById(R.id.wallpaper)).setImageDrawable(null);
+            wallpaperBitmap.recycle();
+            wallpaperBitmap = null;
+        }
         super.onDestroy();
     }
 
     private void showLauncherOptions() {
         boolean enabled = getSharedPreferences("home", 0).getBoolean("cleanup", true);
         new AlertDialog.Builder(this).setTitle("Launcher options")
-                .setMultiChoiceItems(new String[]{"Clean cached apps when returning Home"}, new boolean[]{enabled},
+                .setMultiChoiceItems(new String[]{"Clean cached apps when returning Home", getString(R.string.mountain_glass),
+                                getString(R.string.show_play_next)}, new boolean[]{enabled, theme.mountain, playNextEnabled},
                         (dialog, which, checked) -> {
+                            if (which == 1 || which == 2) {
+                                getSharedPreferences("home", 0).edit()
+                                        .putBoolean(which == 1 ? "mountain_glass" : "play_next", checked).apply();
+                                dialog.dismiss();
+                                recreate();
+                                return;
+                            }
                             getSharedPreferences("home", 0).edit().putBoolean("cleanup", checked).apply();
                             if (checked) handler.postDelayed(cleanup, 3000);
                         })
+                .setNegativeButton(R.string.inputs, (dialog, which) -> showInputs())
                 .setNeutralButton("How it works", (dialog, which) -> new AlertDialog.Builder(this)
                         .setMessage("Android decides which cached processes can close. Music, VPN and casting are protected. Active services may remain.")
                         .setPositiveButton("OK", null).show())
@@ -459,6 +502,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     // ---- top shelf -------------------------------------------------------------------------------
 
     private void showHero(int position, float dockTopInRoot) {
+        if (theme.mountain) return;
         String label = adapter.labelAt(position);
         float y = dockTopInRoot - 14 * density - 26 * density - heroName.getHeight();
         Rect viewport = new Rect(0, 0, grid.getWidth(), grid.getHeight());
@@ -491,6 +535,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void setAmbient(int color) {
+        if (theme.mountain) return;
         ambient.showColor(color);
     }
 
@@ -619,6 +664,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private boolean focusWatchNext(int column) {
+        if (!playNextEnabled) return false;
         if (!watchNext.hasPrograms()) return false;
         restartGlassAt = -1;
         final int request = ++focusRequest;
@@ -705,7 +751,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 text = getString(R.string.offline);
             } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
                 text = getString(R.string.ethernet);
-            } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            } else if (!theme.mountain && caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
                 WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                 WifiInfo info = wm != null ? wm.getConnectionInfo() : null;
                 String ssid = info != null ? info.getSSID() : null;

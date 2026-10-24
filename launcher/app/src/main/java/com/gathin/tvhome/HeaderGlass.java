@@ -27,6 +27,7 @@ final class HeaderGlass {
     private boolean refreshPending;
     private long capturedAt;
     private int captures;
+    private View wallpaper;
 
     HeaderGlass(ViewGroup root, AmbientView ambient, View bar, LiquidGlassButton... buttons) {
         this.root = root; this.ambient = ambient; this.bar = bar; this.buttons = buttons;
@@ -36,6 +37,7 @@ final class HeaderGlass {
         });
     }
 
+    void setWallpaper(View wallpaper) { this.wallpaper = wallpaper; }
     void resume() { active = true; schedule(0); }
     void pause() {
         active = false; main.removeCallbacks(refresh);
@@ -70,9 +72,12 @@ final class HeaderGlass {
         Canvas canvas = new Canvas(bitmap); canvas.drawColor(Color.BLACK);
         canvas.scale(width / (float) area.width(), height / (float) area.height());
         canvas.translate(-area.left, -area.top);
-        int layer = canvas.saveLayerAlpha(null, Math.round(255 * ambient.getAlpha()));
-        // Ambient only: foreground text/icons cannot smear into their own backdrop.
-        ambient.draw(canvas); canvas.restoreToCount(layer);
+        if (wallpaper != null) wallpaper.draw(canvas);
+        if (ambient.getVisibility() == View.VISIBLE && ambient.getWidth() > 0 && ambient.getHeight() > 0) {
+            int layer = canvas.saveLayerAlpha(null, Math.round(255 * ambient.getAlpha()));
+            // Foreground text/icons cannot smear into their own backdrop.
+            ambient.draw(canvas); canvas.restoreToCount(layer);
+        }
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
         for (int pass = 0; pass < 3; pass++) {
             BackdropBlur.pass(pixels, scratch, width, height, 4, true);
