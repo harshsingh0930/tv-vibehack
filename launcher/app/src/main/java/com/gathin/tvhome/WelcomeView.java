@@ -48,7 +48,7 @@ public class WelcomeView extends View {
         message = getResources().getString(R.string.welcome_home);
         lettering = message;
         letteringPaint.setTypeface(getResources().getFont(R.font.outfit));
-        letteringPaint.setFontVariationSettings("'wght' 300");
+        if (android.os.Build.VERSION.SDK_INT >= 28) letteringPaint.setFontVariationSettings("'wght' 300");
         letteringPaint.setTextSize(62f * getResources().getDisplayMetrics().scaledDensity);
         letteringPaint.setLetterSpacing(-.035f);
         letteringPaint.setColor(0xFFFFFFFF);

@@ -108,7 +108,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private void runCleanup() {
         // A preview must never close another app's process while it is being reviewed.
         if (getResources().getBoolean(R.bool.is_preview)) return;
-        if (!homeResumed || !hasWindowFocus() || !getSharedPreferences("home", 0).getBoolean("cleanup", true)) return;
+        if (!homeResumed || !hasWindowFocus() || !getSharedPreferences("home", 0).getBoolean("cleanup", false)) return;
         ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
         if (manager == null || android.os.Build.VERSION.SDK_INT >= 34) return;
         java.util.Set<String> requested = new java.util.HashSet<>();
@@ -407,7 +407,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void showLauncherOptions() {
-        boolean enabled = getSharedPreferences("home", 0).getBoolean("cleanup", true);
+        boolean enabled = getSharedPreferences("home", 0).getBoolean("cleanup", false);
         new AlertDialog.Builder(this).setTitle("Launcher options")
                 .setMultiChoiceItems(new String[]{"Clean cached apps when returning Home", getString(R.string.mountain_glass),
                                 getString(R.string.show_play_next)}, new boolean[]{enabled, theme.mountain, playNextEnabled},

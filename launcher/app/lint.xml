@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- GitHub sideload release, not a Play Store submission. Keep this visible as a warning.
+         Changing target SDK requires a separate permission/TV compatibility migration. -->
+    <issue id="ExpiredTargetSdkVersion" severity="warning" />
+</lint>

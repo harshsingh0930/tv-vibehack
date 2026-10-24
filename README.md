@@ -1,133 +1,103 @@
 # Redmi Glass Launcher
 
-An Android TV launcher I customised for my **Redmi MiTV-AXFR0 running Android TV 11**.
-It builds on
-[Gathin23's original launcher](https://github.com/Gathin23/cleanyourtv).
-This version focuses on a Play Next shelf, frosted controls and consistent
-selection effects across the dock, programmes and app grid.
+A custom Android TV launcher based on [Gathin23's cleanyourtv](https://github.com/Gathin23/cleanyourtv).
+Tested on **Redmi MiTV-AXFR0, Android TV 11**. Requires Android 8.0 or newer;
+other models and Android versions have not been tested here.
 
-The public edition now includes [Mountain Glass](themes/mountain-glass/README.md):
-a mountain wallpaper, red-hour clock, date pill, seven-app glass dock and offline
-app search. It is the default look; hold OK on Settings to switch back to the
-classic app-colour Home. Play Next starts off and can be enabled from the same menu.
-
-| Mountain Glass on the TV | Frosted app search |
+| Mountain Glass Home | App search |
 |---|---|
-| ![Mountain Glass Home](docs/mountain-home.png) | ![Search with installed app icons](docs/mountain-search.png) |
+| ![Home on the test TV](docs/mountain-home.png) | ![Search with installed app icons](docs/mountain-search.png) |
 
-Search uses the existing frosted backdrop, animated focus and installed app icons.
-These are real captures from the Redmi MiTV-AXFR0 on Android TV 11.
+Both screenshots come from the signed 3.12.1 launcher on the real TV.
 
-## On the TV
+## Features
 
-| YouTube selected | CloudStream selected |
+- Mountain wallpaper, coloured clock, date pill and compact seven-app glass dock.
+- Frosted offline app search with icons and remote navigation.
+- App grid, App Library and remote app/dock ordering.
+- Selectable classic app-colour look, with separate ordering for each look.
+- Optional Play Next and cached-process cleanup. **Both are off by default.**
+
+## Download and install
+
+[**Download version 3.12.1**](https://github.com/harshsingh0930/tv-vibehack/releases/tag/v3.12.1)
+
+| APK | Purpose |
 |---|---|
-| ![YouTube selected with a red background glow and Welcome home greeting](docs/custom-home.png) | ![CloudStream selected with a blue background glow](docs/custom-home-cloudstream.png) |
+| **`redmi-glass-3.12.1.apk`** | Full launcher; can become default Home. This is the normal download. |
+| `redmi-glass-preview-3.12.1.apk` | Try the design; cannot become Home and skips process cleanup. |
 
-The background takes its colour from the selected app. This is a colour glow,
-not a downloaded wallpaper; the original launcher also has dock colour effects.
+Install **one** APK. Both can coexist with upstream and older personal builds.
+Preferences are separate and are not copied between apps.
 
-| Play Next with real entries | Hold OK for app controls |
+- **Phone or USB:** download the APK, transfer it to the TV and open it with a TV file manager. A phone-only wireless ADB option is also documented.
+- **Computer:** `adb -s YOUR_SERIAL install -r redmi-glass-3.12.1.apk`.
+- Open **Redmi Glass Launcher** from the TV app list. Choose default Home in TV settings if wanted. Android may reset its Home selection to a chooser after installation; keep your previous launcher installed.
+
+[Installation steps, phone tools and checksums](docs/INSTALL.md).
+The upstream Clean Your TV phone app installs its own launcher, not this fork.
+Our APK is a separate install; no debloating is required.
+
+The downloaded APK file can be deleted after installation. If you tried the
+preview first, uninstall **Mountain Glass Preview** from TV Settings > Apps when
+finished. Installing the full launcher does not remove the preview automatically.
+
+## Remote controls
+
+| Action | Control |
 |---|---|
-| ![Aajtak and Indian Yoga and Wellness TV from Xiaomi TV+, plus a BrowseHere entry, in the connected glass Play Next panel](docs/custom-play-next.png) | ![Compact frosted menu with Move, App info, In dock and Remove from Home](docs/custom-app-menu.png) |
+| Select/open an app | D-pad, then OK |
+| Browse the app grid | Down from the dock |
+| Search | Select Search; OK in the field to type, Down for results, Back to close |
+| Change theme or enable Play Next | **Hold OK on the gear > Launcher options** |
+| Move an app or edit the dock | Hold OK on its tile |
+| Open Inputs in Mountain Glass | Hold OK on Search |
 
-Play Next reads what installed apps publish to Android's TV provider. These
-captures show the entries currently on my TV, including Xiaomi TV+ live channels
-and BrowseHere links. Other apps may publish different entries or none at all.
+To use Play Next later, enable **Show Play Next** in Launcher options. Apps must
+publish watch progress for entries to appear; otherwise the row shows an empty
+message. The [install guide](docs/INSTALL.md) includes the optional TV-listings
+permission command if your TV requires it.
 
-| App grid below Play Next | Horizontal App Library |
-|---|---|
-| ![Amazon miniTV selected below Play Next with its pink background glow](docs/custom-app-grid.png) | ![Frosted horizontal App Library with installed apps, Home status and app count](docs/custom-app-library.png) |
+## Build and validation
 
-The glow also follows apps below the dock. App Library shows this fork's frosted
-presentation; an installed-app library is now available in upstream too.
-All six screenshots are native 1280 × 720 captures from the Redmi test TV.
-
-## What this fork changes
-
-- **Play Next shelf:** resume links, programme artwork and progress from Android's app-published TV provider.
-- **Mountain Glass theme:** bundled landscape, a live coloured clock, date pill, offline app search and a compact seven-slot dock, with separate saved ordering from the classic look.
-- **Frosted presentation:** a connected Play Next title and panel, compact app menus, a horizontal app picker and Inputs/Wi-Fi/Settings buttons that follow the background.
-- **Selection across sections:** the original spring within app rows, a separate tracker for scrolling Play Next cards, a fresh highlight at row crossings and a held-Up stop at the dock.
-- **Background and greeting:** colours follow programmes and lower app rows as well as dock apps, alongside a finite Welcome home word animation.
-- **App controls:** hold OK for Move, App info, dock replacement and Home-shortcut removal in one compact menu.
-- **Desktop diagnostics:** a separate, read-only TV task manager for memory, CPU, storage and processes.
-
-### Shared with upstream
-
-The original project already provides the dock, clock, glass selection and
-app-coloured dock glow. Current upstream also supports app reordering and an
-installed-app library. My smaller App Library contribution was merged in
-[PR #305](https://github.com/Gathin23/cleanyourtv/pull/305).
-The gallery shows how these pieces look together in this fork; it does not claim
-that every feature was invented here or is exclusive to this build.
-
-This is the public launcher-only version on `main`. My
-[personal build](https://github.com/harshsingh0930/tv-vibehack/tree/custom/tv-home)
-is maintained separately and includes additional screensaver experiments.
-
-## Build this version
-
-Use JDK 17, Android SDK platform 34 and build-tools 34.0.0.
-
-Windows:
+Use JDK 17 and Android SDK 34 / build-tools 34.0.0:
 
 ```powershell
 .\launcher\build.ps1 -JavaHome 'C:\Java\jdk-17' -SdkPath 'C:\Android\Sdk'
 ```
 
-macOS/Linux, with `JAVA_HOME` and `ANDROID_HOME` set:
+macOS/Linux: `cd launcher`, then `./gradlew assembleDebug`.
+Output: `launcher/app/build/outputs/apk/debug/app-debug.apk`.
+[Build and data-use details](docs/CUSTOM-FORK.md).
 
-```sh
-cd launcher
-./gradlew assembleDebug
-```
+Both signed APKs installed and launched on the test TV. Checks covered dock
+navigation, search and app launch/return, theme switching and the Play Next empty
+state. All 11 JVM tests pass. Lint: zero errors, 44 warnings; the old target-SDK
+Play policy finding remains a warning for this sideload release (target API 29).
+Phone-only installation and changing the 12/24-hour setting are not tested end-to-end.
 
-The APK is `launcher/app/build/outputs/apk/debug/app-debug.apk`.
-See [build, installation and permissions](docs/CUSTOM-FORK.md) and
-[TV task manager setup](tools/README.md). The build command does not install an app.
-The inherited debloat/install scripts can change TV packages and the default Home.
+Search and wallpaper work offline. Play Next artwork may be fetched over HTTPS
+from addresses supplied by installed apps. No analytics or launcher account.
+The release uses its own signing key; local debug builds cannot update a signed
+release in place. Package IDs and checksums are in the install guide.
 
-## Use with the remote
+## Credits
 
-After building, follow the [installation steps](docs/CUSTOM-FORK.md#build-and-install).
-To try it alongside your existing Home, use the separate
-[preview build](themes/mountain-glass/README.md#preview-without-replacing-home).
-
-- Use Left/Right to select an app and OK to launch it. Down opens the lower app grid.
-- Select Search to filter installed apps by name or package. Press OK in the field
-  to type, Down to browse matching app icons, and Back to close search.
-- Hold OK on Settings to switch **Mountain Glass theme** or **Show Play Next**.
-  Play Next is off by default. Each look remembers its own app ordering.
-- Hold OK on an app for app controls, including moving it or editing the dock.
-- Hold OK on Search for Inputs.
-
-## Hardware and data use
-
-Developed on Redmi MiTV-AXFR0, Android 11/API 30; other TVs have not been verified.
-The public source builds independently of my personal checkout.
-
-Play Next reads links and progress that installed apps publish locally. Programme
-artwork can be downloaded on demand over HTTPS; unavailable art falls back to an app icon.
-There is no analytics, account sign-in or persistent background service.
-[Full details and limitations](docs/CUSTOM-FORK.md#permissions-and-data-use).
-
-## Credits and upstream contributions
-
-Original launcher and debloat tools by [Gathin23 and contributors](https://github.com/Gathin23/cleanyourtv).
-My custom Home-screen additions are maintained in this fork. The code retains the
-[MIT licence](LICENSE); Outfit retains its [SIL Open Font Licence](launcher/FONT-LICENSE-OFL.txt).
-
-The smaller installed-app library was accepted upstream in
-[upstream PR #305](https://github.com/Gathin23/cleanyourtv/pull/305).
+Original launcher/tools: [Gathin23 and contributors](https://github.com/Gathin23/cleanyourtv).
+Code: [MIT](LICENSE). Outfit: [SIL OFL](launcher/FONT-LICENSE-OFL.txt).
+Wallpaper: [provenance](themes/mountain-glass/CREDITS.md).
+My smaller App Library contribution was merged in [PR #305](https://github.com/Gathin23/cleanyourtv/pull/305).
+The [personal branch](https://github.com/harshsingh0930/tv-vibehack/tree/custom/tv-home) is separate.
 
 ---
 
-## Original project README
+<details>
+<summary>Original project README (historical guide)</summary>
 
-The original guide below is retained from the fork's starting point (`19f3c22`).
-It describes the original project. For this custom launcher, use the build notes above;
-for the author's latest guide, visit [cleanyourtv](https://github.com/Gathin23/cleanyourtv).
+Retained from the fork's starting point (`19f3c22`). Use the instructions above
+for this launcher; see [cleanyourtv](https://github.com/Gathin23/cleanyourtv) for
+the original author's current guide.
+
 
 # tv-vibehack
 
@@ -236,3 +206,5 @@ Add your TV's debloat list, improve the launcher, or sharpen the prompt. See
 
 MIT, see [`LICENSE`](LICENSE). The Outfit typeface is under the SIL Open Font License, see
 `launcher/FONT-LICENSE-OFL.txt`.
+
+</details>

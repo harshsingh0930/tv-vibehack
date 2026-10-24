@@ -54,7 +54,7 @@ final class AppLibraryDialog {
         });
         content.setClipToOutline(true);
         TextView heading = text(activity, title, 24, 0xFFFFFFFF);
-        heading.setFontVariationSettings("'wght' 600");
+        if (android.os.Build.VERSION.SDK_INT >= 28) heading.setFontVariationSettings("'wght' 600");
         LinearLayout titleRow = new LinearLayout(activity);
         titleRow.setGravity(Gravity.CENTER_VERTICAL);
         titleRow.addView(heading, new LinearLayout.LayoutParams(0, -1, 1));
@@ -146,7 +146,7 @@ final class AppLibraryDialog {
         TextView view = new TextView(activity);
         view.setText(value); view.setTextSize(size); view.setTextColor(color);
         view.setTypeface(activity.getResources().getFont(R.font.outfit));
-        view.setFontVariationSettings("'wght' 500");
+        if (android.os.Build.VERSION.SDK_INT >= 28) view.setFontVariationSettings("'wght' 500");
         view.setIncludeFontPadding(false); view.setSingleLine(true);
         view.setEllipsize(TextUtils.TruncateAt.END);
         return view;

@@ -1,6 +1,6 @@
 # Redmi glass launcher
 
-Public Home-screen fork on `main`, version 3.12-public. Based on Gathin23's launcher, with
+Public Home-screen fork on `main`, version 3.12.1. Based on Gathin23's launcher, with
 Play Next, remote app and dock editing, a horizontal App library, glass controls,
 artwork-matched background colours and a finite Welcome home word animation.
 The upstream reference launcher has a deliberately smaller scope. It now also
@@ -32,15 +32,17 @@ For a manually configured TV, use its exact ADB serial:
 
 ```sh
 adb -s YOUR_SERIAL install -r launcher/app/build/outputs/apk/debug/app-debug.apk
-adb -s YOUR_SERIAL shell pm grant com.gathin.tvhome android.permission.READ_TV_LISTINGS
+adb -s YOUR_SERIAL shell pm grant com.harshsingh.redmiglass android.permission.READ_TV_LISTINGS
 ```
 
 These commands install the app and grant access to Play Next entries. They do
-not disable other packages or switch the default Home. The inherited
-`build-and-install.sh` does both, so review its settings before running it.
-The app ID is `com.gathin.tvhome`: it shares the original launcher's identity.
-An update needs the same signing key; uninstalling to change signatures erases
-preferences. Keep signing material private.
+not disable other packages or switch the default Home. The install helper now also
+leaves those choices to you. The published app ID is `com.harshsingh.redmiglass`;
+it installs alongside upstream and older personal builds. Its Java namespace
+remains `com.gathin.tvhome`. The preview ID is `com.harshsingh.redmiglass.preview`.
+The release uses its own signing key. A local debug build cannot update a signed
+release in place; use the same signing key for updates. Separate packages do not
+import preferences from the old launcher.
 
 The example dock, hidden-app and tuner defaults in `config.xml` match the tested
 Redmi configuration. Change them for another TV. Saved Home choices override
@@ -61,7 +63,7 @@ Wi-Fi permissions let the header show network status and the current network
 name. Location permission is used for the SSID on supported Android versions;
 this launcher has no GPS lookup, location upload, analytics or account system.
 
-Optional Home cleanup requests that Android close eligible cached processes.
+Home cleanup is off by default in 3.12.1. When enabled it requests that Android close eligible cached processes.
 It does not force-stop apps or guarantee extra free RAM. Music, VPN, downloads,
 casting and protected system packages are excluded; active services can remain.
 Android 14 and later restrict this API, so the launcher skips these requests
@@ -78,11 +80,18 @@ A held Up press stops at the dock until released. The welcome animation finishes
 behind translucent TV Settings and hides in the lower app grid.
 
 The public source builds independently of the personal development checkout.
-`assembleDebug` passed for this public snapshot on 20 October 2026; the APK is
-about 1.63 MiB. Generated APKs, local SDK paths and signing files stay out of Git.
-Its minimum API is 26 and target API is 29; it is intended for ADB sideloading.
-Inherited Android lint findings include the missing Leanback app entry and an
-API-28 font style with minimum API 26; this is not a claim of Play Store readiness.
+Release and preview builds and all 11 JVM tests pass for 3.12.1. Android lint
+reports no errors; the old target-SDK Play policy finding is explicitly retained
+as a warning for this sideload-only release. Minimum API is 26, target API is 29.
+The release banner/icon now use proper PNG encoding, TV app-list launch is present,
+and Java font-weight calls are guarded on Android 8.
+
+The signed 3.12.1 preview installed successfully on retry after an initial verifier
+rejection. No verification setting was changed. Dock edges, filtered search,
+result navigation, empty results, popup dismissal, classic/Mountain Glass switching
+and the optional Play Next empty state were exercised on the real TV.
+Android 8 and newer Android versions were not tested on hardware. Generated APKs,
+local SDK paths and signing keys stay out of Git.
 
 ![Custom launcher dock](custom-home.png)
 ![Play Next focus](custom-play-next.png)

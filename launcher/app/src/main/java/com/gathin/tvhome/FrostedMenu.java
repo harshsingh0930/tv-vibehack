@@ -119,7 +119,7 @@ final class FrostedMenu {
         view.setGravity(Gravity.CENTER_VERTICAL); view.setSingleLine(true);
         view.setEllipsize(android.text.TextUtils.TruncateAt.END);
         view.setTypeface(activity.getResources().getFont(R.font.outfit));
-        view.setFontVariationSettings("'wght' 500");
+        if (android.os.Build.VERSION.SDK_INT >= 28) view.setFontVariationSettings("'wght' 500");
         view.setIncludeFontPadding(false);
         view.setLetterSpacing(.01f);
         return view;

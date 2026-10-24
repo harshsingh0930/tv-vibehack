@@ -20,7 +20,7 @@ def adb(*command):
 def key(code, delay=.36):
     adb('shell', 'input', 'keyevent', str(code)); time.sleep(delay)
 def snapshot(name):
-    data = adb('shell', 'dumpsys', 'activity', 'com.gathin.tvhome/.MainActivity')
+    data = adb('shell', 'dumpsys', 'activity', 'com.harshsingh.redmiglass/com.gathin.tvhome.MainActivity')
     (args.output / f'{name}.txt').write_bytes(data)
     (args.output / f'{name}.png').write_bytes(adb('exec-out', 'screencap', '-p'))
     return data.decode(errors='replace')
@@ -29,12 +29,12 @@ if args.expected_model:
     assert adb('shell', 'getprop', 'ro.product.model').decode().strip() == args.expected_model
 for _ in range(10):
     activity = adb('shell', 'dumpsys', 'activity', 'activities').decode()
-    if any('mResumedActivity' in line and 'com.gathin.tvhome/' in line for line in activity.splitlines()):
+    if any('mResumedActivity' in line and 'com.harshsingh.redmiglass/' in line for line in activity.splitlines()):
         break
     time.sleep(.3)
 else:
     raise AssertionError('Launcher did not become foreground; no navigation inputs sent')
-before = adb('shell', 'run-as', 'com.gathin.tvhome', 'cat', 'shared_prefs/home.xml')
+before = adb('shell', 'run-as', 'com.harshsingh.redmiglass', 'cat', 'shared_prefs/home.xml')
 if args.library_up_only:
     for _ in range(12): key(20, .25)
     for attempt in range(3):
@@ -78,7 +78,7 @@ assert any(n.get('resource-id','').endswith(':id/appLibrary') and n.get('focused
 key(23, .5)
 snapshot('full-installed-library')
 key(4)
-after = adb('shell', 'run-as', 'com.gathin.tvhome', 'cat', 'shared_prefs/home.xml')
+after = adb('shell', 'run-as', 'com.harshsingh.redmiglass', 'cat', 'shared_prefs/home.xml')
 def choices(data):
     return {e.get('name'): ET.tostring(e, encoding='unicode') for e in ET.fromstring(data)
             if not e.get('name','').startswith('last_cleanup')}

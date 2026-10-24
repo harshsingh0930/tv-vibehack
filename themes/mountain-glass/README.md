@@ -42,7 +42,7 @@ cd launcher
 ```
 
 The result is `launcher/build/mountain-preview/outputs/apk/debug/app-debug.apk`.
-It uses `com.gathin.tvhome.mountainpreview`, has a separate data directory,
+It uses `com.harshsingh.redmiglass.preview`, has a separate data directory,
 does not claim the HOME category and skips cached-process cleanup. Build only
 while the TV is in use. Installation and explicit launch can be done later;
 they are not part of the build. No default-home, accessibility or screensaver
