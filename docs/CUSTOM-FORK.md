@@ -12,8 +12,8 @@ original Outfit font licence in `launcher/FONT-LICENSE-OFL.txt`.
 [Mountain Glass](../themes/mountain-glass/README.md) adds the reference-inspired
 wallpaper, clock, date pill, search and seven-slot glass dock to the public
 edition. Hold OK on Settings to switch to the classic look; the two looks keep
-separate dock and app-order preferences. The original screenshots below show
-the classic look. Mountain Glass Home, dock navigation and filtered glass search were checked on the real TV; see the current screenshots in the root README.
+separate dock and app-order preferences. Mountain Glass is the default on a fresh installation.
+See the current Home and search screenshots in the root README.
 
 ## Build and install
 
@@ -92,6 +92,3 @@ result navigation, empty results, popup dismissal, classic/Mountain Glass switch
 and the optional Play Next empty state were exercised on the real TV.
 Android 8 and newer Android versions were not tested on hardware. Generated APKs,
 local SDK paths and signing keys stay out of Git.
-
-![Custom launcher dock](custom-home.png)
-![Play Next focus](custom-play-next.png)

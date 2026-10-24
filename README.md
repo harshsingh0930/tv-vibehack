@@ -3,6 +3,7 @@
 A custom Android TV launcher based on [Gathin23's cleanyourtv](https://github.com/Gathin23/cleanyourtv).
 Tested on **Redmi MiTV-AXFR0, Android TV 11**. Requires Android 8.0 or newer;
 other models and Android versions have not been tested here.
+**Mountain Glass is the default look on a fresh installation.**
 
 | Mountain Glass Home | App search |
 |---|---|
@@ -104,10 +105,6 @@ the original author's current guide.
 **Your TV, minus the ads.** Debloat any Android TV / Google TV over ADB and give it a clean,
 tvOS-inspired launcher. Hand the prompt to Claude Code or any coding assistant, answer a few
 questions about which apps you use, and it does the rest on the real TV.
-
-| Stock home screen | After |
-|---|---|
-| ![Stock Google TV home with a sponsored ad](docs/stock-home.jpg) | ![tvOS-style launcher](docs/new-home.jpg) |
 
 Everything is reversible: packages are disabled, never uninstalled, and a restore script puts the
 stock launcher back.
