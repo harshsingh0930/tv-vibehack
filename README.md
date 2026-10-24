@@ -19,6 +19,10 @@ It adds remote app organisation, Play Next and glass controls to
 
 Screenshots are from the Redmi test TV. Streaming apps decide which entries appear in Play Next.
 
+## Scheduled occasion wallpapers (3.12)
+
+The personal launcher now supports an optional [self-hosted Occasion Studio](occasion-studio/README.md): scheduled wallpapers/messages, per-photo native effects, offline expiry and automatic return to the ordinary Home/screensaver. The server deletes expired event photos; setup uses your own server and private pairing.
+
 ## What I changed
 
 - **App and dock editing:** hold OK to move apps, replace dock favourites or remove Home shortcuts.

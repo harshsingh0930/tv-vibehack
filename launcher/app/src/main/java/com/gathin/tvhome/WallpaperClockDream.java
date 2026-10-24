@@ -33,6 +33,12 @@ public final class WallpaperClockDream extends DreamService {
     private DreamPhotoFeed photoFeed;
     private final Runnable rotate = this::nextPicture;
     private DreamOnlineSource source;
+    private DreamOnlineSource weatherSource;
+    private OccasionController occasions;
+    private OccasionView occasionView;
+    private TextView provider;
+    private boolean occasionActive;
+    private int photoGeneration;
     private TextView weather, credit, photoTitle;
     private final Runnable refreshWeather = this::updateWeather;
     private int weatherCode = -1;
@@ -63,6 +69,9 @@ public final class WallpaperClockDream extends DreamService {
             image.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
             root.addView(image, new FrameLayout.LayoutParams(-1, -1));
         }
+        occasionView = new OccasionView(this, true);
+        root.addView(occasionView, new FrameLayout.LayoutParams(-1, -1));
+        occasions = new OccasionController(this);
         View shade = new View(this);
         shade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
                 new int[]{0x00000000, 0x08000000, 0x73000000}));
@@ -118,7 +127,7 @@ public final class WallpaperClockDream extends DreamService {
         credit = text("", 11, 400);
         credit.setTextColor(0xCFFFFFFF); credit.setGravity(Gravity.END);
         caption.addView(credit);
-        TextView provider = text("Weather: Open-Meteo  •  Photos: Wikimedia Commons", 10, 400);
+        provider = text("Weather: Open-Meteo  •  Photos: Wikimedia Commons", 10, 400);
         provider.setTextColor(0xACFFFFFF); provider.setGravity(Gravity.END);
         caption.addView(provider);
         FrameLayout.LayoutParams captionParams = new FrameLayout.LayoutParams(dp(440), -2,
@@ -133,19 +142,43 @@ public final class WallpaperClockDream extends DreamService {
         if (dreaming) return;
         dreaming = true;
         photoIndex = 0;
-        source = new DreamOnlineSource(this);
-        decoder = Executors.newSingleThreadExecutor();
+        weatherSource = new DreamOnlineSource(this);
         weatherWorker = Executors.newSingleThreadExecutor();
-        photoFeed = new DreamPhotoFeed(new java.io.File(getFilesDir(), "dream-feed.json"),
-                getSharedPreferences("dream", 0).getString("theme", "both"), source);
-        nextPicture();
+        occasions.start(new OccasionController.Listener() {
+            @Override public void sceneChanged(OccasionProtocol.Scene scene, Bitmap photo, String effect) {
+                if (!dreaming) return;
+                if (!occasionActive) {
+                    occasionActive = true; photoGeneration++;
+                    main.removeCallbacks(rotate); rotationScheduled = false;
+                    if (source != null) source.close(); source = null;
+                    if (decoder != null) decoder.shutdownNow(); decoder = null;
+                    for (ImageView image : layers) { image.animate().cancel(); image.setImageDrawable(null); image.setAlpha(0f); }
+                    hasPicture = false;
+                }
+                occasionView.show(scene, photo, effect);
+                if (photo != null) clockGlass.showPhoto(photo, true); else clockGlass.clear();
+                photoTitle.setText(scene.title); credit.setText(""); provider.setText("Weather: Open-Meteo");
+            }
+            @Override public void cleared() {
+                occasionActive = false; occasionView.clear();
+                if (dreaming && source == null) {
+                    clockGlass.clear(); provider.setText("Weather: Open-Meteo  •  Photos: Wikimedia Commons");
+                    source = new DreamOnlineSource(WallpaperClockDream.this);
+                    decoder = Executors.newSingleThreadExecutor();
+                    photoFeed = new DreamPhotoFeed(new java.io.File(getFilesDir(), "dream-feed.json"),
+                            getSharedPreferences("dream", 0).getString("theme", "both"), source);
+                    nextPicture();
+                }
+            }
+        });
         updateWeather();
     }
 
     private void nextPicture() {
         rotationScheduled = false;
-        if (!dreaming || decoder == null || photoFeed == null) return;
+        if (!dreaming || occasionActive || decoder == null || photoFeed == null) return;
         final int token = session;
+        final int photoToken = photoGeneration;
         final DreamOnlineSource activeSource = source;
         final DreamPhotoFeed feed = photoFeed;
         decoder.execute(() -> {
@@ -165,7 +198,7 @@ public final class WallpaperClockDream extends DreamService {
             final Bitmap picture = decoded;
             final JSONObject item = selected;
             main.post(() -> {
-                if (!dreaming || token != session) {
+                if (!dreaming || occasionActive || token != session || photoToken != photoGeneration) {
                     if (picture != null) picture.recycle();
                     return;
                 }
@@ -208,7 +241,7 @@ public final class WallpaperClockDream extends DreamService {
     private void updateWeather() {
         if (!dreaming || weatherWorker == null) return;
         final int token = session;
-        final DreamOnlineSource activeSource = source;
+        final DreamOnlineSource activeSource = weatherSource;
         weatherWorker.execute(() -> {
             JSONObject result = null;
             try { result = activeSource.weather(false); } catch (Exception ignored) {}
@@ -272,6 +305,9 @@ public final class WallpaperClockDream extends DreamService {
 
     private void stopPictures() {
         dreaming = false; session++;
+        if (occasions != null) occasions.stop();
+        if (occasionView != null) occasionView.clear(); occasionActive = false;
+        if (weatherSource != null) weatherSource.close(); weatherSource = null;
         rotationScheduled = false;
         main.removeCallbacks(rotate);
         main.removeCallbacks(refreshWeather);

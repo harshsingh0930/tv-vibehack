@@ -159,3 +159,8 @@ Version 3.11 stops a held Up press at the four-app dock when climbing from Play 
 the lower app grid or App Library. Release and press Up again to reach Inputs,
 Wi-Fi and Settings. Repeats still move through the lower rows normally; the existing
 glass appearance and movement animation are unchanged.
+
+
+## Occasion Studio (3.12)
+
+Optional self-hosted occasion wallpapers, per-photo effects and greetings on Home and the existing screensaver. See [setup and retention details](../occasion-studio/README.md). Normal app playback is never covered. Pairing credentials and uploaded images remain outside Git.

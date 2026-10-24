@@ -10,9 +10,15 @@ android {
         applicationId 'com.gathin.tvhome'
         minSdk 26
         targetSdk 29
-        versionCode 23
-        versionName '3.11'
+        versionCode 24
+        versionName '3.12'
         testInstrumentationRunner 'com.gathin.tvhome.DreamFeedChecks'
+        manifestPlaceholders = [homeCategory: 'android.intent.category.HOME', launcherLabel: '@string/app_name']
+        if (project.hasProperty('occasionPreview')) {
+            versionName '3.12-occasion-preview'
+            applicationIdSuffix '.occasionpreview'
+            manifestPlaceholders = [homeCategory: 'android.intent.category.LEANBACK_LAUNCHER', launcherLabel: 'Occasion Preview']
+        }
     }
 
     buildTypes {
@@ -24,6 +30,12 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        // This private sideloaded launcher is not submitted to Google Play.
+        // Preserve target 29 for the existing Android 11 behaviour; keep runtime API checks enabled.
+        disable 'ExpiredTargetSdkVersion'
     }
 }
 

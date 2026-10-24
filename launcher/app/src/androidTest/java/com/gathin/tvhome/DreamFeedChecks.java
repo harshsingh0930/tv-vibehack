@@ -16,7 +16,7 @@ public final class DreamFeedChecks extends Instrumentation {
     @Override public void onStart() {
         Bundle result = new Bundle();
         try {
-            queueAndRestart(); offlineAndMissingFiles(); themeAndQuality(); bundledAndCancellation();
+            queueAndRestart(); offlineAndMissingFiles(); themeAndQuality(); bundledAndCancellation(); occasionEffects();
             result.putString("stream", "PASS: " + passed + " feed assertions\n");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable failure) {
@@ -27,6 +27,42 @@ public final class DreamFeedChecks extends Instrumentation {
 
     private void check(boolean condition, String message) {
         if (!condition) throw new AssertionError(message); passed++;
+    }
+    private void occasionEffects() throws Exception {
+        String event="11111111-1111-4111-8111-111111111111", id="22222222-2222-4222-8222-222222222222";
+        JSONObject photo=new JSONObject().put("id",id).put("sha256","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").put("bytes",1024)
+                .put("width",1280).put("height",720).put("path","/api/tv/media/"+event+"/"+id);
+        JSONObject value=new JSONObject().put("id",event).put("title","Test").put("message","").put("color","#d7b46e")
+                .put("startsAt",1000L).put("endsAt",3601000L).put("effect","flowers").put("mode","album").put("intervalSeconds",30)
+                .put("assets",new JSONArray().put(photo));
+        check(new OccasionProtocol.Scene(value).effectFor(0).equals("flowers"),"Photo inherits the occasion by default");
+        photo.put("effect","none");
+        check(new OccasionProtocol.Scene(value).effectFor(0).equals("none"),"Explicit no effects overrides the occasion");
+        photo.put("effect","bubbles");
+        check(new OccasionProtocol.Scene(value).effectFor(0).equals("flowers"),"Old bubble settings migrate to flowers");
+        OccasionEffects artwork=new OccasionEffects();
+        Bitmap overlay=Bitmap.createBitmap(960,540,Bitmap.Config.ARGB_8888);
+        android.graphics.Canvas canvas=new android.graphics.Canvas(overlay);
+        for(String effect:new String[]{"diya","gulal","temple","marigold","mantra","starlight","cosmic","peacock","leaves"}) {
+            photo.put("effect",effect);
+            check(new OccasionProtocol.Scene(value).effectFor(0).equals(effect),"Photo effect reaches the rotation renderer: "+effect);
+            overlay.eraseColor(0);
+            check(artwork.draw(canvas,effect,12,960,540,true,330),"Festive artwork supports "+effect);
+            int[] pixels=new int[960*540]; overlay.getPixels(pixels,0,960,0,0,960,540);
+            boolean visible=false; for(int pixel:pixels) if((pixel>>>24)>0) {visible=true;break;}
+            check(visible,"Festive artwork draws visible pixels: "+effect);
+            if(effect.equals("diya")) {
+                int brightAbove=0,brightBehind=0;
+                for(int y=0;y<540;y++)for(int x=0;x<960;x++)if((pixels[y*960+x]>>>24)>190) {
+                    if(y<330)brightAbove++;else brightBehind++;
+                }
+                check(brightAbove>100,"Detailed diya artwork remains visible above the app dock");
+                check(brightBehind==0,"Opaque diya artwork never falls behind the dock");
+            }
+        }
+        overlay.recycle(); photo.put("effect","unknown");
+        boolean rejected=false; try { new OccasionProtocol.Scene(value); } catch(IllegalArgumentException expected) { rejected=true; }
+        check(rejected,"Unknown photo effects are rejected");
     }
     private File state() throws IOException {
         File folder = new File(getTargetContext().getCacheDir(), "feed-checks"); folder.mkdirs();

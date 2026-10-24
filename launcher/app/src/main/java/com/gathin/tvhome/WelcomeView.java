@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 public class WelcomeView extends View {
     private final float density;
     private boolean shown;
+    private boolean occasionActive;
     private float restingTop;
     private final TextPaint letteringPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final String message;
@@ -112,6 +113,7 @@ public class WelcomeView extends View {
     }
 
     void revealAt(float top) {
+        if (occasionActive) return;
         if (shown) {
             if (Math.abs(top - restingTop) > .5f) setTranslationY(top);
             restingTop = top;
@@ -153,6 +155,8 @@ public class WelcomeView extends View {
         if (shown) setTranslationY(restingTop);
         invalidate();
     }
+
+    void occasionActive(boolean active) { occasionActive = active; if (active) reset(); }
 
     void reset() {
         shown = false;

@@ -17,6 +17,7 @@ public final class AmbientView extends View {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private ValueAnimator transition;
     private int color = 0xFF487E8C;
+    private OccasionView occasion;
     private final List<Runnable> colorFrameListeners = new ArrayList<>();
 
     public AmbientView(Context context, AttributeSet attrs) { super(context, attrs); }
@@ -24,6 +25,11 @@ public final class AmbientView extends View {
     void addColorFrameListener(Runnable listener) { colorFrameListeners.add(listener); }
     void removeColorFrameListener(Runnable listener) { colorFrameListeners.remove(listener); }
     int displayedColor() { return color; }
+
+    void occasionSource(OccasionView source) {
+        occasion = source;
+        source.onBackdropChanged(() -> { invalidate(); for (Runnable listener : colorFrameListeners) listener.run(); });
+    }
 
     void showColor(int next) {
         if (transition != null) transition.cancel();
@@ -41,6 +47,7 @@ public final class AmbientView extends View {
     }
 
     @Override protected void onDraw(Canvas canvas) {
+        if (occasion != null && occasion.active()) { occasion.drawBackdrop(canvas, getWidth(), getHeight()); return; }
         float radius = getWidth() * .62f;
         int rgb = color & 0xFFFFFF;
         paint.setShader(new RadialGradient(getWidth() * .32f, getHeight() * .42f, radius,

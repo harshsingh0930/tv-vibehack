@@ -63,6 +63,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private AmbientView ambient;
     private TextView heroName;
     private WelcomeView welcome;
+    private OccasionView occasionView;
+    private OccasionController occasions;
     private HeaderGlass headerGlass;
     private float welcomeTop;
     private boolean welcomeFits;
@@ -145,6 +147,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         ambient = findViewById(R.id.ambient);
         heroName = findViewById(R.id.heroName);
         welcome = findViewById(R.id.welcome);
+        occasionView = new OccasionView(this, false);
+        root.addView(occasionView, 1, new FrameLayout.LayoutParams(-1, -1));
+        ambient.occasionSource(occasionView);
+        occasions = new OccasionController(this);
         greeting = findViewById(R.id.greeting);
         btnWifi = findViewById(R.id.btnWifi);
 
@@ -200,6 +206,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             int h = b - t;
             int dockRow = (int) ((145 + 6 + 12) * density);   // item height plus DockDecoration offsets
             int want = Math.max(0, h - dockRow - (int) (30 * density));
+            Rect dockViewport = new Rect(0, 0, grid.getWidth(), h);
+            root.offsetDescendantRectToMyCoords(grid, dockViewport);
+            occasionView.homeContentBottom(dockViewport.top + want);
             if (grid.getPaddingTop() != want) {
                 grid.setPadding(grid.getPaddingLeft(), want, grid.getPaddingRight(), grid.getPaddingBottom());
             }
@@ -281,6 +290,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         updateGreeting();
         updateWifiLabel();
         handler.postDelayed(minuteTick, MINUTE_MS);
+        occasions.start(new OccasionController.Listener() {
+            @Override public void sceneChanged(OccasionProtocol.Scene scene, android.graphics.Bitmap photo, String effect) {
+                welcome.occasionActive(true); occasionView.messageVisible(heroShown && welcomeFits);
+                occasionView.show(scene, photo, effect); ambient.setAlpha(1f);
+            }
+            @Override public void cleared() {
+                occasionView.clear(); welcome.occasionActive(false);
+                if (heroShown && welcomeFits) welcome.revealAt(welcomeTop);
+            }
+        });
 
         // Return to the tile we left from, or the first one.
         grid.getViewTreeObserver().addOnPreDrawListener(new android.view.ViewTreeObserver.OnPreDrawListener() {
@@ -311,6 +330,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onPause() {
         homeResumed = false;
+        occasions.stop(); occasionView.clear(); welcome.occasionActive(false);
         upHeld = upStartedBelowDock = false;
         headerGlass.pause();
         super.onPause();
@@ -367,6 +387,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     @Override protected void onDestroy() {
+        if (occasions != null) occasions.stop();
         handler.removeCallbacksAndMessages(null);
         watchNext.destroy();
         super.onDestroy();
@@ -469,9 +490,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         float spaceBottom = y - 18f * density;
         welcomeFits = spaceBottom - spaceTop >= welcome.getHeight();
         if (welcomeFits) {
+            occasionView.messageVisible(true);
             welcomeTop = spaceTop + (spaceBottom - spaceTop - welcome.getHeight()) / 2f;
             if (grid.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) welcome.revealAt(welcomeTop);
-        } else welcome.hide();
+        } else { welcome.hide(); occasionView.messageVisible(false); }
         boolean changed = !label.contentEquals(heroName.getText());
 
         if (!heroShown) {
@@ -497,6 +519,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void hideHero() {
+        occasionView.messageVisible(false);
         welcome.hide();
         if (!heroShown) return;
         heroShown = false;

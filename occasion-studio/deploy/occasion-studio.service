@@ -1,0 +1,24 @@
+[Unit]
+Description=Occasion Studio dashboard and TV sync
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=occasion
+Group=occasion
+WorkingDirectory=/opt/occasion-studio/cloud
+EnvironmentFile=/etc/occasion-studio.env
+ExecStart=/usr/bin/node server/index.mjs
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/occasion-studio
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

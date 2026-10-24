@@ -36,6 +36,7 @@ public final class DreamSettingsActivity extends Activity {
         content.setBackgroundColor(0xFF10151F);
         scroll.addView(content); setContentView(scroll);
         label("Wallpaper + clock", 30);
+        button("Cloud occasions · wallpapers & messages", () -> startActivity(new android.content.Intent(this, OccasionSettingsActivity.class)));
         label("Hindu temples and festivals • fresh online photography", 17);
         cityButton = button(cityLabel(), this::chooseCity);
         button("Photo collection", () -> {

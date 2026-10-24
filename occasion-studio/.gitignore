@@ -1,0 +1,13 @@
+cloud/node_modules/
+cloud/dist/
+cloud/data/
+cloud/.env
+cloud/coverage/
+review/
+tv/**/build/
+tv/**/.gradle/
+tv/**/local.properties
+source-snapshot.json
+*.keystore
+*.jks
+*.apk

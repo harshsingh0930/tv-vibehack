@@ -1,0 +1,17 @@
+# WireGuard already uses UDP 443 on this server. HTTPS uses TCP 443;
+# disable HTTP/3 so Caddy does not compete for the VPN's UDP port.
+{
+    servers {
+        protocols h1 h2
+    }
+}
+
+# Public HTTPS dashboard; the API enforces owner login and TV credentials.
+# Set PUBLIC_HOST to the chosen hostname. No VPN is required by clients.
+{$PUBLIC_HOST} {
+    header Strict-Transport-Security "max-age=31536000"
+    reverse_proxy 127.0.0.1:8787 {
+        # Overwrite, rather than trust, any client-supplied address header.
+        header_up X-Real-IP {remote_host}
+    }
+}

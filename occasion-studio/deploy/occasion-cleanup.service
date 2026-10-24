@@ -1,0 +1,16 @@
+[Unit]
+Description=Delete expired occasion photographs
+
+[Service]
+Type=oneshot
+User=occasion
+Group=occasion
+WorkingDirectory=/opt/occasion-studio/cloud
+EnvironmentFile=/etc/occasion-studio.env
+ExecStart=/usr/bin/node server/cleanup.mjs
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/occasion-studio
