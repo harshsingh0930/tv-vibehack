@@ -2,13 +2,31 @@
 
 An optional self-hosted dashboard for scheduling photographs, messages and native effects on the personal launcher. Phone/laptop access uses public HTTPS; WireGuard is optional.
 
-## What it does
+![Occasion Studio desktop editor with peacock feather preview](docs/screenshots/dashboard-desktop.png)
 
-- Single wallpaper or six-photo albums with automatic 16:9 crop, focal-point selection and small-image warnings.
-- Per-photo effects, explicit no-effects/inherit choices, India-time schedules, edit/delete and overlap protection.
-- Home and screensaver integration, cached active/next events, local expiry while offline, and automatic return to the ordinary background.
-- Owner login, short-lived pairing, separate read-only TV tokens and SSE updates.
-- Original uploads, display JPEGs and thumbnails are deleted when an occasion expires or is deleted. Cleanup runs every minute and on startup; unused drafts expire too. TV event images are pruned by the visible Home/screensaver controller, or when next opened if the app/TV was off. Photo retention in external backups is an administrator responsibility.
+## Features
+
+- Schedule a photo or six-photo album with a greeting; edit/delete occasions and reject overlapping schedules.
+- Automatic 16:9 crop and focal-point controls, with warnings for small images.
+- 13 animated effects, per-photo overrides and a no-effects option; live previews on desktop and mobile.
+- Owner login, approved TV pairing and public HTTPS access through your own server.
+- Home/screensaver support in this personal fork, cached current/next events and offline expiry.
+
+Expired/deleted occasion originals, display JPEGs and thumbnails are removed on the server. TV copies are pruned by the active Home/screensaver controller, or when next opened if the TV/app was off. External backup retention is the server owner's responsibility.
+
+## Screenshots
+
+Browser captures use an isolated demo account and original demo artwork. They show the current website preview; they are not screenshots of the proposed standalone add-on.
+
+| Peacock feather shimmer | Temple bells and aura |
+|---|---|
+| ![Peacock feather preview](docs/screenshots/effect-peacock.png) | ![Temple bell preview](docs/screenshots/effect-temple.png) |
+| **Diya flames and sparks** | **Holi gulal drift** |
+| ![Diya preview](docs/screenshots/effect-diya.png) | ![Gulal preview](docs/screenshots/effect-gulal.png) |
+| **Floating flowers** | **Marigold and rose rain** |
+| ![Flower preview](docs/screenshots/effect-flowers.png) | ![Marigold preview](docs/screenshots/effect-marigold.png) |
+
+[All effects, mobile editor, schedule controls and real-TV captures](docs/screenshots/README.md).
 
 ## Build
 
